@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaCarrera" as Vista
+control "CarreraEstController" as Ctrl
+entity "CarreraService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-66: Estudiante Consulta Carrera
+
+Alumno -> Vista : Acceder a consulta de carrera
+activate Vista
+Vista -> Ctrl : obtenerCarreraEstudiante()
+activate Ctrl
+
+Ctrl -> Service : obtenerCarreraPorAlumno(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarCarreraAlumno(idAlumno)
+activate BD
+BD --> Service : DatosCarrera / null
+deactivate BD
+
+alt Excepción 1: El alumno no posee una carrera asociada
+    Service --> Ctrl : Error("Sin carrera asignada")
+    Ctrl --> Vista : Mostrar vista vacía con advertencia
+    Vista --> Alumno : Informar ausencia de carrera asociada
+else Excepción 2: La carrera no se encuentra disponible
+    Service --> Ctrl : Error("Carrera inactiva o no disponible")
+    Ctrl --> Vista : Mostrar mensaje de indisponibilidad
+    Vista --> Alumno : Informar carrera no disponible
+else Excepción 3: Error al recuperar la información
+    Service --> Ctrl : Error("Error en consulta de BD")
+    Ctrl --> Vista : Mostrar error de sistema
+    Vista --> Alumno : Informar fallo al obtener información
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : DatosCarrera
+    deactivate Service
+    Ctrl --> Vista : MostrarDatosCarrera(DatosCarrera)
+    deactivate Ctrl
+    Vista --> Alumno : Mostrar información de la carrera
+    deactivate Vista
+end
+
+@enduml

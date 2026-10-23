@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-67 - Estudiante Consulta Cursadas
+
+|Estudiante|
+start
+:Selecciona la opción "Consultar Cursadas";
+
+|Interfaz|
+:Solicitar historial y estado de cursadas;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Consultar registros de cursadas en la base de datos;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen cursadas registradas?) then (Si)
+      :Buscar materias asociadas a las cursadas;
+
+      if (§¿Materias asociadas encontradas?) then (Si)
+        :Procesar estados académicos\n(Regular, Cursando, Reprobado, Promocionado);
+
+        |Interfaz|
+        :Mostrar listado de cursadas con sus materias y estados;
+
+        |Estudiante|
+        :Visualizar sus cursadas;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de advertencia:\nMaterias asociadas no encontradas;
+
+        |Estudiante|
+        :Visualizar mensaje de inconsistencia;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje:\nSin cursadas registradas;
+
+      |Estudiante|
+      :Visualizar pantalla de cursadas vacía;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nError durante la consulta en BD;
+
+    |Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

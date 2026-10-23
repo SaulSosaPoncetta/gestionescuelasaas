@@ -1,0 +1,73 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaEditarPerfilEst" as Vista
+control "PerfilEstudianteController" as Ctrl
+entity "AlumnoService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-78: Estudiante Actualiza sus Datos Personales
+
+Alumno -> Vista : Solicitar edición de datos personales
+activate Vista
+Vista -> Ctrl : obtenerFormularioEdicion()
+activate Ctrl
+Ctrl --> Vista : Mostrar formulario con datos actuales
+deactivate Ctrl
+
+Alumno -> Vista : Ingresar nuevos datos y confirmar cambios
+Vista -> Ctrl : actualizarDatosPersonales(datosModificados)
+activate Ctrl
+
+Ctrl -> Ctrl : validarCamposObligatorios(datosModificados)
+
+alt Excepción 2: Campos obligatorios vacíos o incompletos
+    Ctrl --> Vista : Mostrar error ("Complete todos los campos obligatorios")
+    Vista --> Alumno : Solicitar completar campos faltantes
+else Campos Válidos
+    Ctrl -> Service : guardarDatosPersonales(idAlumnoAutenticado, datosModificados)
+    activate Service
+    
+    Service -> BD : verificarAlumnoExistente(idAlumno)
+    activate BD
+    BD --> Service : RegistroExiste / null
+    deactivate BD
+
+    alt Excepción 3: Registro de alumno inexistente
+        Service --> Ctrl : Error("Alumno no encontrado")
+        Ctrl --> Vista : Mostrar mensaje de error
+        Vista --> Alumno : Informar inconsistencia de usuario
+    else Alumno Confirmado
+        Service -> Service : validarFormatoDatos(datosModificados)
+        
+        alt Excepción 1: Datos inválidos (e.g. formato de email o teléfono incorrecto)
+            Service --> Ctrl : Error("Formato de datos ingresados inválido")
+            Ctrl --> Vista : Mostrar error de validación
+            Vista --> Alumno : Solicitar corrección de formato
+        else Formato Correcto
+            Service -> BD : actualizarPerfilAlumnoBD(idAlumno, datosModificados)
+            activate BD
+            
+            alt Excepción 4: Error durante la actualización en base de datos
+                BD --> Service : ErrorPersistencia
+                Service --> Ctrl : Error("Error al guardar cambios en la BD")
+                Ctrl --> Vista : Mostrar mensaje de fallo del sistema
+                Vista --> Alumno : Informar error en la actualización
+            else Actualización Exitosa (Secuencia Normal)
+                BD --> Service : ActualizacionExitosa
+                deactivate BD
+                Service --> Ctrl : ConfirmacionPerfil
+                deactivate Service
+                Ctrl --> Vista : InformarExito("Datos personales actualizados correctamente")
+                deactivate Ctrl
+                Vista --> Alumno : Mostrar confirmación de éxito
+                deactivate Vista
+            end
+        end
+    end
+end
+
+@enduml

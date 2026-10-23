@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaAlumnos" as Vista
+control "MateriaController" as Ctrl
+entity "MateriaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-57: Docente Reprueba a Alumno
+
+Docente -> Vista : Seleccionar materia y ver alumnos
+activate Vista
+Vista -> Ctrl : obtenerAlumnosMateria(idMateria)
+activate Ctrl
+Ctrl --> Vista : Mostrar listado de alumnos
+deactivate Ctrl
+
+Docente -> Vista : Seleccionar alumno y solicitar "Reprobar"
+Vista -> Ctrl : reprobarAlumno(idMateria, idAlumno)
+activate Ctrl
+
+Ctrl -> Service : cambiarEstadoCursada(idMateria, idAlumno, "Reprobado")
+activate Service
+Service -> BD : verificarInscripcion(idMateria, idAlumno)
+activate BD
+BD --> Service : EstadoInscripcion / null
+deactivate BD
+
+alt Excepción 1 / 3: Alumno o Materia inexistente
+    Service --> Ctrl : Error("Entidad no encontrada")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar que no existe la entidad
+else Excepción 2: Alumno no asociado a la materia
+    Service --> Ctrl : Error("El alumno no está inscripto en la materia")
+    Ctrl --> Vista : Mostrar mensaje de inconsistencia
+    Vista --> Docente : Informar falta de asociación
+else Validación Correcta
+    Service -> BD : actualizarEstadoCursada(idMateria, idAlumno, "Reprobado")
+    activate BD
+    
+    alt Excepción 4: Error durante la actualización
+        BD --> Service : ErrorBD
+        Service --> Ctrl : Error("Fallo al actualizar estado")
+        Ctrl --> Vista : Mostrar error del sistema
+        Vista --> Docente : Informar fallo en la actualización
+    else Actualización Exitosa (Secuencia Normal)
+        BD --> Service : EstadoActualizado
+        deactivate BD
+        Service --> Ctrl : OperaciónExitosa
+        deactivate Service
+        Ctrl --> Vista : NotificarResultado("Alumno reprobado correctamente")
+        deactivate Ctrl
+        Vista --> Docente : Mostrar confirmación en pantalla
+        deactivate Vista
+    end
+end
+
+@enduml

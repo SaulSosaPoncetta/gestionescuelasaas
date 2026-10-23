@@ -1,0 +1,31 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Rol;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Rol>
+ */
+class RolFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        $roles = [
+            'Administrador',
+            'Docente',
+            'Estudiante',
+            'Secretario',
+        ];
+
+        return [
+            'descripcion' => $this->faker->unique()->randomElement($roles),
+        ];
+    }
+}

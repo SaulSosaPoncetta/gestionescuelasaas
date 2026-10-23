@@ -1,0 +1,52 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaDetalleAlumno" as Vista
+control "AlumnoController" as Ctrl
+entity "AlumnoService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-63: Docente Consulta Información de Alumno
+
+Docente -> Vista : Seleccionar un alumno(idAlumno)
+activate Vista
+Vista -> Ctrl : obtenerDetalleAlumno(idAlumno)
+activate Ctrl
+
+Ctrl -> Service : consultarPerfilAlumnoDocente(idAlumno, idDocente)
+activate Service
+Service -> BD : buscarAlumnoPorId(idAlumno)
+activate BD
+BD --> Service : ObjetoAlumno / null
+deactivate BD
+
+alt Excepción 1: Alumno inexistente
+    Service --> Ctrl : Error("Alumno no encontrado")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar alumno inexistente
+else Excepción 2: Alumno no relacionado con el docente
+    Service -> Service : verificarRelacionDocente(idAlumno, idDocente)
+    Service --> Ctrl : Error("Sin relación académica con el alumno")
+    Ctrl --> Vista : Mostrar mensaje de restricción
+    Vista --> Docente : Informar falta de permisos sobre el alumno
+else Excepción 3: Información no disponible
+    Service --> Ctrl : Error("Datos incompletos o no disponibles")
+    Ctrl --> Vista : Mostrar advertencia
+    Vista --> Docente : Informar indisponibilidad de información
+else Excepción 4: Error durante la consulta
+    Service --> Ctrl : Error("Error de base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error de sistema
+    Vista --> Docente : Informar error del sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : DatosAlumno
+    deactivate Service
+    Ctrl --> Vista : MostrarInformacionAlumno(DatosAlumno)
+    deactivate Ctrl
+    Vista --> Docente : Presentar información académica del alumno
+    deactivate Vista
+end
+
+@enduml

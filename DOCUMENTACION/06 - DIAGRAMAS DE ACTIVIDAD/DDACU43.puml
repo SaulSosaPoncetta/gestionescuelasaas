@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-43 - Consultar Materia como Estudiante
+
+|Estudiante|
+start
+:Selecciona una materia de su trayectoria;
+
+|Interfaz|
+:Solicitar información de la materia seleccionada;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Buscar materia en la base de datos;
+  
+  if (§¿Materia existe?) then (Si)
+    :Verificar si la materia está asociada\na la trayectoria académica del estudiante;
+    
+    if (§¿Materia asociada al estudiante?) then (Si)
+      :Recuperar detalles de la materia\n(datos generales, programa, estado);
+      
+      if (§¿Consulta exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar información y detalles\nde la materia seleccionada;
+        
+        |Estudiante|
+        :Visualizar los datos de la materia;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error\nde lectura / consulta en BD;
+        
+        |Estudiante|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nMateria no asociada a su trayectoria;
+      
+      |Estudiante|
+      :Regresar a su lista de materias;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nMateria inexistente;
+    
+    |Estudiante|
+    :Regresar a su lista de materias;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

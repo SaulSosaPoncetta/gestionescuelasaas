@@ -1,0 +1,47 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-04 - Consultar Perfil
+
+|Usuario autenticado|
+start
+:Selecciona la opción\n"Mis datos";
+
+|Interfaz|
+:Enviar solicitud de\nconsulta de perfil;
+
+|Sistema|
+:Verifica autenticación;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Identifica al usuario;
+  :Buscar y recuperar datos\npersonales del usuario;
+  
+  if (§¿Datos de usuario\nexistentes?) then (Si)
+    |Interfaz|
+    :Mostrar información\npersonal en pantalla;
+    
+    |Usuario autenticado|
+    :Visualizar datos\ndel perfil;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nDatos no encontrados;
+    
+    |Usuario autenticado|
+    :Permanecer en pantalla\no regresar;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Usuario autenticado|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

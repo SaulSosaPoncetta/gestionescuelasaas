@@ -1,0 +1,48 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaMatriculacion" as Vista
+control "CursadaEstController" as Ctrl
+entity "MatriculacionService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-68: Estudiante Consulta Materias para Matriculación
+
+Alumno -> Vista : Acceder a opción de matriculación
+activate Vista
+Vista -> Ctrl : obtenerMateriasDisponibles()
+activate Ctrl
+
+Ctrl -> Service : consultarMateriasHabilitadas(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarMateriasYCondiciones(idAlumno)
+activate BD
+BD --> Service : ListaMaterias / ListaVacía
+deactivate BD
+
+alt Excepción 2: El alumno no cumple las condiciones requeridas
+    Service -> Service : evaluarCondicionesAcademicas(idAlumno)
+    Service --> Ctrl : Error("No cumple requisitos para matricularse")
+    Ctrl --> Vista : Mostrar mensaje de inhabilitación
+    Vista --> Alumno : Informar incumplimiento de condiciones
+else Excepción 1: No existen materias disponibles para matricular
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("No hay materias disponibles")
+    Vista --> Alumno : Informar falta de oferta académica
+else Excepción 3: Error al consultar las materias
+    Service --> Ctrl : Error("Error al consultar la BD")
+    Ctrl --> Vista : Mostrar error de sistema
+    Vista --> Alumno : Informar falla en la consulta
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaMateriasDisponibles
+    deactivate Service
+    Ctrl --> Vista : MostrarMateriasParaMatricular(ListaMateriasDisponibles)
+    deactivate Ctrl
+    Vista --> Alumno : Mostrar materias disponibles para matriculación
+    deactivate Vista
+end
+
+@enduml

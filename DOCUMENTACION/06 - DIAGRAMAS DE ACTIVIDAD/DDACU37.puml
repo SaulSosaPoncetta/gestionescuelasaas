@@ -1,0 +1,93 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-37 - Consultar Historial de Finales
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de historial de finales;
+
+|Interfaz|
+:Solicitar registros del historial de mesas de examen;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Recuperar historial de finales\ndesde la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen registros históricos?) then (Si)
+      |Interfaz|
+      :Mostrar historial de mesas de examen\ny opciones de filtro;
+      
+      |Administrador / Secretaría|
+      repeat
+        if (§¿Desea aplicar filtros?) then (Si)
+          :Ingresa criterios de búsqueda / filtro\n(ej. año, carrera, materia, docente);
+          
+          |Interfaz|
+          :Enviar criterios de búsqueda;
+          
+          |Sistema|
+          :Procesar búsqueda y filtrar resultados;
+          
+          if (§¿Existen coincidencias?) then (Si)
+            |Interfaz|
+            :Mostrar historial filtrado;
+          else (No)
+            |Interfaz|
+            :Mostrar mensaje: No hay coincidencias\npara los filtros aplicados;
+          endif
+        else (No (Ver historial completo))
+        endif
+
+        |Administrador / Secretaría|
+        if (§¿Desea consultar el detalle de un final?) then (Si)
+          :Selecciona una mesa del historial;
+          
+          |Interfaz|
+          :Solicitar detalle de la mesa seleccionada;
+          
+          |Sistema|
+          :Recuperar detalle de la mesa\ny actas correspondientes;
+          
+          |Interfaz|
+          :Mostrar información detallada\ndel final seleccionado;
+        else (No)
+        endif
+
+        |Administrador / Secretaría|
+      repeat while (§¿Desea realizar otra consulta o filtro?) is (Si)
+      ->No;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen\nregistros históricos de finales;
+      
+      |Administrador / Secretaría|
+      :Visualizar pantalla sin registros;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura / consulta en BD;
+    
+    |Administrador / Secretaría|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

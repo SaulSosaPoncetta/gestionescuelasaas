@@ -1,0 +1,81 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaInscripcionFinal" as Vista
+control "EstudianteFinalesController" as Ctrl
+entity "EstudianteFinalesService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-71: Estudiante Consulta Materias Habilitadas para Final
+
+Alumno -> Vista : Solicitar verificación de materia para final(idMateria)
+activate Vista
+Vista -> Ctrl : verificarHabilitacionMateria(idMateria)
+activate Ctrl
+
+Ctrl -> Service : evaluarHabilitacionFinal(idAlumnoAutenticado, idMateria)
+activate Service
+
+Service -> BD : obtenerEstadoCarrera(idAlumno)
+activate BD
+BD --> Service : EstadoCarrera
+deactivate BD
+
+alt Excepción 4: La carrera asociada no se encuentra activa
+    Service --> Ctrl : ResultadoInhabilitado("Carrera inactiva")
+    Ctrl --> Vista : Mostrar motivo de inhabilitación
+    Vista --> Alumno : Informar carrera inactiva
+else Carrera Activa
+    Service -> BD : obtenerEstadoCursada(idAlumno, idMateria)
+    activate BD
+    BD --> Service : EstadoCursada / null
+    deactivate BD
+
+    alt Excepción 1: El alumno no posee una cursada registrada para la materia
+        Service --> Ctrl : ResultadoInhabilitado("Sin cursada aprobada/regularizada")
+        Ctrl --> Vista : Mostrar motivo de inhabilitación
+        Vista --> Alumno : Informar falta de cursada
+    else Cursada Válida
+        Service -> BD : verificarFinalAprobado(idAlumno, idMateria)
+        activate BD
+        BD --> Service : Aprobado / NoAprobado
+        deactivate BD
+
+        alt Excepción 3: El alumno ya aprobó el final de la materia
+            Service --> Ctrl : ResultadoInhabilitado("Materia ya aprobada en final")
+            Ctrl --> Vista : Mostrar motivo de inhabilitación
+            Vista --> Alumno : Informar que la materia ya fue aprobada
+        else Final Pendiente
+            Service -> Service : verificarCorrelatividadesFinal(idAlumno, idMateria)
+            
+            alt Excepción 2: No se cumplen las correlatividades requeridas
+                Service --> Ctrl : ResultadoInhabilitado("Faltan correlativas")
+                Ctrl --> Vista : Mostrar motivo de inhabilitación
+                Vista --> Alumno : Informar falta de correlatividades
+            else Correlatividades OK
+                Service -> BD : buscarMesaExamenActiva(idMateria)
+                activate BD
+                BD --> Service : MesaExamen / null
+                deactivate BD
+
+                alt Excepción 5: No existe una mesa de examen correspondiente
+                    Service --> Ctrl : ResultadoInhabilitado("Sin mesa disponible")
+                    Ctrl --> Vista : Mostrar motivo de inhabilitación
+                    Vista --> Alumno : Informar ausencia de mesa de examen
+                else Verificación Exitosa (Secuencia Normal)
+                    Service --> Ctrl : ResultadoHabilitado("Alumno Habilitado")
+                    deactivate Service
+                    Ctrl --> Vista : InformarResultadoHabilitado()
+                    deactivate Ctrl
+                    Vista --> Alumno : Comunicar que está habilitado para rendir
+                    deactivate Vista
+                end
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-11 - Registrar Docente
+
+|Administrador / Secretaría|
+start
+:Accede a "Agregar docente";
+
+|Interfaz|
+:Mostrar formulario de registro;
+
+|Administrador / Secretaría|
+:Ingresa los datos personales\ny de acceso del docente;
+
+|Interfaz|
+:Enviar datos al sistema;
+
+|Sistema|
+:Validar datos obligatorios\ny formato de la información;
+
+if (§¿Campos completos\ny datos válidos?) then (Si)
+  :Verificar existencia de DNI;
+  
+  if (§¿DNI es único?) then (Si)
+    :Crear usuario del docente;
+    :Asignar rol "Docente";
+    :Registrar información del docente\nen la base de datos;
+    
+    if (§¿Registro exitoso?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar al docente\nregistrado en el sistema;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla en la base de datos;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error: DNI duplicado;
+    
+    |Administrador / Secretaría|
+    :Corregir el DNI ingresado;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Datos incompletos\no formato inválido;
+  
+  |Administrador / Secretaría|
+  :Completar o corregir formulario;
+  stop
+endif
+
+@enduml

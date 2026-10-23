@@ -1,0 +1,72 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-64 - Docente Actualiza su Perfil
+
+|Docente|
+start
+:Accede al formulario de edición de perfil;
+
+|Interfaz|
+:Mostrar datos personales y de contacto editables;
+
+repeat
+  |Docente|
+  :Modificar campos de contacto y solicitar guardado;
+
+  |Interfaz|
+  :Enviar datos modificados;
+
+  |Sistema|
+  :Validar completitud de campos obligatorios;
+
+  if (§¿Campos obligatorios completos?) then (Si)
+    :Verificar existencia del perfil en la BD;
+
+    if (§¿Perfil docente existe?) then (Si)
+      :Validar formato de datos ingresados;
+
+      if (§¿Formato de datos válido?) then (Si)
+        :Persistir actualización en la base de datos;
+
+        if (§¿Actualización exitosa?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de éxito:\nPerfil actualizado correctamente;
+
+          |Docente|
+          :Visualizar confirmación;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error\nal guardar en BD;
+
+          |Docente|
+          :Visualizar mensaje de error;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nFormato de datos ingresado no permitido;
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nNo se encontró el registro de perfil;
+
+      |Docente|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nComplete todos los campos requeridos;
+  endif
+
+  |Docente|
+repeat while (§¿Desea corregir los datos?) is (Si)
+stop
+@enduml

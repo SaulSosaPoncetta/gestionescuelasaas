@@ -1,0 +1,51 @@
+.main {
+    padding-bottom: 80px;
+}
+
+/* reutilizamos .top-bar, .card-container, .form-grid, etc */
+
+/* INPUT TEXT (faltaba en alumnos) */
+.form-grid input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid #bbb;
+    background-color: #f5f5f5;
+    font-size: clamp(13px, 0.9vw, 15px);
+    color: #555;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+}
+
+.form-grid input:hover {
+    border-color: #2563eb;
+    background-color: #fff;
+}
+
+.form-grid input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background-color: #fff;
+}
+
+.card-container {
+    margin-bottom: 24px;
+}
+
+/* FECHAS */
+.row-small input {
+    width: 25%;
+    min-width: 100px;
+}
+
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .row-small {
+        flex-direction: column;
+    }
+
+    .row-small input {
+        width: 100%;
+    }
+}

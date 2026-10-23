@@ -1,0 +1,46 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-62 - Docente Consulta Historial de Alumnos
+
+|Docente|
+start
+:Accede a "Historial de Alumnos";
+
+|Interfaz|
+:Solicitar historial de alumnos evaluados;
+
+|Sistema|
+:Consultar registros históricos de alumnos evaluados por el docente;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Existen registros de alumnos pasados?) then (Si)
+    :Procesar el historial consolidado de alumnos;
+
+    |Interfaz|
+    :Mostrar el listado del historial de alumnos;
+
+    |Docente|
+    :Visualizar el historial de alumnos;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje:\nNo hay registros históricos de alumnos;
+
+    |Docente|
+    :Visualizar mensaje;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error\nde lectura en la BD;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

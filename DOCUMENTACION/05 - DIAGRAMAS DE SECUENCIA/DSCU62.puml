@@ -1,0 +1,45 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaHistorialAlumnos" as Vista
+control "HistorialAlumnoController" as Ctrl
+entity "AlumnoService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-62: Docente Consulta Historial de Alumnos
+
+Docente -> Vista : Acceder a historial de alumnos
+activate Vista
+Vista -> Ctrl : consultarHistorialAlumnos()
+activate Ctrl
+
+Ctrl -> Ctrl : verificarRolAutenticado("Docente")
+
+Ctrl -> Service : obtenerHistorialAlumnosDocente(idDocente)
+activate Service
+Service -> BD : buscarHistorialAlumnosPorDocente(idDocente)
+activate BD
+BD --> Service : ListaHistorialAlumnos / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1: No existen registros
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("No hay registros históricos de alumnos")
+    Vista --> Docente : Informar ausencia de datos
+else Excepción 2: Error durante la consulta
+    Service --> Ctrl : Error("Error al consultar la BD")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar error en la consulta
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaHistorialAlumnos
+    deactivate Service
+    Ctrl --> Vista : MostrarHistorialAlumnos(ListaHistorialAlumnos)
+    deactivate Ctrl
+    Vista --> Docente : Presentar historial de alumnos
+    deactivate Vista
+end
+
+@enduml

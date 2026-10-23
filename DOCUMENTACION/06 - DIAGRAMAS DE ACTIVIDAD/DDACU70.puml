@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-70 - Estudiante Consulta Finales
+
+|Estudiante|
+start
+:Accede al módulo "Exámenes Finales";
+
+|Interfaz|
+:Solicitar oferta de mesas de examen;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Consultar mesas de examen activas en la base de datos;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen mesas disponibles?) then (Si)
+      :Verificar materias habilitadas para el estudiante;
+
+      if (§¿Posee materias habilitadas para rendir?) then (Si)
+        :Cargar oferta de mesas y fechas correspondientes;
+
+        |Interfaz|
+        :Mostrar la oferta de mesas de examen en pantalla;
+
+        |Estudiante|
+        :Visualizar mesas disponibles;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje:\nSin materias habilitadas para rendir examen final;
+
+        |Estudiante|
+        :Visualizar aviso;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje:\nNo existen mesas de examen disponibles en el período;
+
+      |Estudiante|
+      :Visualizar aviso de catálogo vacío;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nError durante la consulta en BD;
+
+    |Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

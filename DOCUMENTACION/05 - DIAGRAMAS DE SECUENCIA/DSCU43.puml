@@ -1,0 +1,106 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "MateriaUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "MateriaController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Materia ==
+
+Actor -> UI: Seleccionar una materia
+activate UI
+
+UI -> Ctrl: consultarMateria(idMateria)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Identificación de la Materia ==
+
+    Ctrl -> DB: identificarMateria(idMateria)
+    activate DB
+
+    alt Excepción 1: Materia inexistente
+
+        DB --> Ctrl: materia inexistente
+        Ctrl --> UI: error: Materia inexistente
+        UI --> Actor: Mostrar mensaje "La materia seleccionada no existe"
+
+    else Materia existente
+
+        return materia
+
+        == Fase 3: Verificación de Asociación ==
+
+        Ctrl -> DB: verificarMateriaAsociada(estudiante, materia)
+        activate DB
+        return materiaAsociada
+
+        alt Excepción 2: Materia no asociada
+
+            Ctrl --> UI: error: Materia no asociada
+            UI --> Actor: Mostrar mensaje "La materia no está asociada a la trayectoria académica del estudiante"
+
+        else Materia asociada
+
+            == Fase 4: Consulta de Información ==
+
+            Ctrl -> DB: consultarInformacionMateria(materia)
+            activate DB
+
+            alt Excepción 3: Error de consulta
+
+                DB --> Ctrl: error: Error de consulta
+                Ctrl --> UI: error: No se pudo realizar la consulta
+                UI --> Actor: Mostrar mensaje "No se pudo consultar la información de la materia"
+
+            else Consulta exitosa
+
+                return informacionMateria
+
+                Ctrl --> UI: mostrarInformacionMateria(informacionMateria)
+                deactivate Ctrl
+
+                UI --> Actor: Mostrar datos de la materia
+                deactivate UI
+
+            end
+        end
+    end
+end
+
+@enduml

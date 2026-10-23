@@ -1,0 +1,127 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "InscripcionesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "EstudianteFinalesService" as Service
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Consulta de Inscripciones ==
+
+Actor -> UI: Consultar sus inscripciones
+activate UI
+
+UI -> Service: consultarInscripciones()
+activate Service
+
+== Verificación de Precondición ==
+
+Service -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Service --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Service -> DB: consultarInscripciones(estudiante)
+    activate DB
+    return inscripciones
+
+    Actor -> UI: Seleccionar una inscripción
+    Actor -> UI: Solicitar la baja
+
+    UI -> Service: darDeBajaInscripcion(idInscripcion)
+
+    == Fase 2: Identificación de la Inscripción ==
+
+    Service -> DB: identificarInscripcion(idInscripcion)
+    activate DB
+
+    alt Excepción 1: Inscripción inexistente
+
+        DB --> Service: inscripción inexistente
+        Service --> UI: error: Inscripción inexistente
+        UI --> Actor: Mostrar mensaje "La inscripción seleccionada no existe"
+
+    else Inscripción existente
+
+        return inscripcion
+
+        == Fase 3: Verificación de la Inscripción ==
+
+        Service -> DB: verificarInscripcionEstudiante(inscripcion, estudiante)
+        activate DB
+        return perteneceAlEstudiante
+
+        alt Excepción 2: Inscripción perteneciente a otro estudiante
+
+            Service --> UI: error: Inscripción perteneciente a otro estudiante
+            UI --> Actor: Mostrar mensaje "La inscripción no corresponde al estudiante"
+
+        else Inscripción correspondiente
+
+            == Fase 4: Procesamiento de la Baja ==
+
+            Service -> DB: verificarMesaDisponibleBaja(idInscripcion)
+            activate DB
+            return mesaDisponible
+
+            alt Excepción 3: Mesa no disponible para baja
+
+                Service --> UI: error: Mesa no disponible para baja
+                UI --> Actor: Mostrar mensaje "La mesa no se encuentra disponible para realizar la baja"
+
+            else Mesa disponible para baja
+
+                Service -> DB: procesarBajaInscripcion(idInscripcion)
+                activate DB
+
+                alt Excepción 4: Error de actualización
+
+                    DB --> Service: error: No se pudo actualizar la inscripción
+                    Service --> UI: error: Error de actualización
+                    UI --> Actor: Mostrar mensaje "No se pudo procesar la baja de la inscripción"
+
+                else Baja procesada
+
+                    return bajaProcesada
+
+                    Service --> UI: confirmarOperacion
+                    deactivate Service
+
+                    UI --> Actor: El sistema confirma la operación: "La inscripción a la mesa de examen fue dada de baja correctamente"
+                    deactivate UI
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

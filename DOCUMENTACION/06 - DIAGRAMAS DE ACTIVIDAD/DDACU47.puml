@@ -1,0 +1,105 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-47 - Asociar Documentación a Plan de Estudio
+
+|Administrador / Secretaría|
+start
+:Selecciona la carrera;
+:Accede a la gestión del plan de estudio;
+
+|Interfaz|
+:Solicitar información de la carrera seleccionada;
+
+|Sistema|
+:Verificar permisos administrativos del usuario;
+
+if (§¿Usuario posee permisos administrativos?) then (Si)
+  :Buscar carrera en la base de datos;
+  
+  if (§¿Carrera existe?) then (Si)
+    |Interfaz|
+    :Mostrar formulario para datos del plan\ny carga de documentación/resolución;
+    
+    |Administrador / Secretaría|
+    :Ingresa los datos del plan y selecciona\nel archivo de documentación;
+    
+    |Interfaz|
+    :Enviar datos del plan y archivo adjunto;
+    
+    |Sistema|
+    :Validar presencia, formato y tamaño del archivo;
+    
+    if (§¿Archivo presente y formato válido?) then (Si)
+      :Validar la integridad y consistencia\nde los datos del plan de estudio;
+      
+      if (§¿Datos del plan son válidos?) then (Si)
+        :Almacenar archivo de documentación\nen el servidor/repositorio;
+        
+        if (§¿Almacenamiento de archivo exitoso?) then (Si)
+          :Registrar la documentación y asociar\nel plan de estudio con la carrera en BD;
+          
+          if (§¿Persistencia exitosa?) then (Si)
+            |Interfaz|
+            :Mostrar mensaje de confirmación\nde asociación exitosa;
+            
+            |Administrador / Secretaría|
+            :Visualizar el plan de estudio\ncon su documentación asociada;
+            stop
+          else (No)
+            |Interfaz|
+            :Mostrar mensaje de error:\nError de persistencia en BD;
+            
+            |Administrador / Secretaría|
+            :Reintentar o cancelar;
+            stop
+          endif
+
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nError de almacenamiento de archivo;
+          
+          |Administrador / Secretaría|
+          :Reintentar la subida del archivo;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nDatos del plan inválidos;
+        
+        |Administrador / Secretaría|
+        :Corregir los datos del plan;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nArchivo inexistente o formato no permitido;
+      
+      |Administrador / Secretaría|
+      :Seleccionar un archivo válido;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nCarrera inexistente;
+    
+    |Administrador / Secretaría|
+    :Regresar al listado de carreras;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nPermisos insuficientes;
+  
+  |Administrador / Secretaría|
+  :Visualizar aviso de acceso denegado;
+  stop
+endif
+
+@enduml

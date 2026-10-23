@@ -1,0 +1,109 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "MateriaRegistroUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "MateriaController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección de Contexto y Formulario ==
+
+Actor -> UI: Seleccionar carrera del listado
+activate UI
+Actor -> UI: Seleccionar "Agregar materia"
+
+UI -> Ctrl: prepararFormularioAlta(carreraId)
+activate Ctrl
+
+== Verificación de Carrera (Precondición) ==
+Ctrl -> DB: verificarCarreraExistente(carreraId)
+activate DB
+return carreraExiste
+
+alt Excepción 1: Carrera inexistente
+    Ctrl --> UI: error: La carrera seleccionada no existe
+    UI --> Actor: Mostrar mensaje "Error: La carrera de destino no es válida"
+else Carrera válida
+    Ctrl --> UI: mostrarFormularioMateria(carreraId)
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra el formulario de alta de materia
+    deactivate UI
+
+    == Fase 2: Ingreso de Datos y Persistencia Transaccional ==
+
+    Actor -> UI: Ingresar los datos de la materia y confirmar
+    activate UI
+    
+    UI -> Ctrl: registrarMateria(carreraId, datosMateria)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosMateria)
+    
+    alt Excepción 2: Datos inválidos (Código mal formado, horas negativas, etc.)
+        Ctrl --> UI: error: Formatos o datos no válidos
+        UI --> Actor: Mostrar campos con error y solicitar su corrección
+    else Formatos correctos
+        
+        Ctrl -> DB: verificarMateriaDuplicada(carreraId, datosMateria.nombre o datosMateria.codigo)
+        activate DB
+        return materiaExiste
+        
+        alt Excepción 3: Materia duplicada
+            Ctrl --> UI: error: La materia ya existe en esta carrera
+            UI --> Actor: Mostrar mensaje "Error: Ya existe un espacio curricular con ese nombre/código"
+            
+        else Materia única
+            
+            == Inicio de Transacción Atómica ==
+            Ctrl -> DB: iniciarTransaccion()
+            activate DB
+            deactivate DB
+            
+            Ctrl -> DB: insertarMateria(datosMateria)
+            activate DB
+            return nuevaMateriaId
+            
+            Ctrl -> DB: asociarMateriaACarrera(nuevaMateriaId, carreraId)
+            activate DB
+            deactivate DB
+            
+            alt Excepción 4: Error de persistencia (Fallo físico en base de datos)
+                DB --> Ctrl: error: SQLException / TransactionException
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: No se pudo completar el registro
+                UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente nuevamente"
+            else Escritura exitosa (Flujo Normal)
+                
+                Ctrl -> DB: commitTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl --> UI: registroMateriaExitoso
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación: "Materia registrada y asociada a la carrera"
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

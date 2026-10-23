@@ -1,0 +1,82 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-71 - Estudiante Consulta Materias Habilitadas para Final
+
+|Estudiante|
+start
+:Solicita verificar habilitación de una materia para final;
+
+|Interfaz|
+:Enviar solicitud de verificación;
+
+|Sistema|
+:Verificar el estado de la carrera del estudiante;
+
+if (§¿Carrera activa?) then (Si)
+  :Verificar historial de examen final de la materia;
+
+  if (§¿Final previamente aprobado?) then (No)
+    :Verificar estado de la cursada;
+
+    if (§¿Cursada regularizada / aprobada?) then (Si)
+      :Validar correlatividades aprobadas para rendir final;
+
+      if (§¿Cumple correlatividades?) then (Si)
+        :Verificar existencia de mesa de examen activa;
+
+        if (§¿Existe mesa de examen habilitada?) then (Si)
+          |Interfaz|
+          :Mostrar indicación de materia habilitada para inscripción;
+
+          |Estudiante|
+          :Visualizar confirmación de habilitación;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nSin mesa de examen correspondiente abierta;
+
+          |Estudiante|
+          :Visualizar motivo de inhabilitación;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nCorrelatividades de final incompletas;
+
+        |Estudiante|
+        :Visualizar motivo de inhabilitación;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nSin cursada registrada/regularizada;
+
+      |Estudiante|
+      :Visualizar motivo de inhabilitación;
+      stop
+    endif
+
+  else (Si)
+    |Interfaz|
+    :Mostrar mensaje de error:\nFinal previamente aprobado;
+
+    |Estudiante|
+    :Visualizar motivo de inhabilitación;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nCarrera no activa;
+
+  |Estudiante|
+  :Visualizar motivo de inhabilitación;
+  stop
+endif
+
+@enduml

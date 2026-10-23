@@ -1,0 +1,78 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaCargaNotas" as Vista
+control "MateriaController" as Ctrl
+entity "MateriaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-56: Docente Carga Notas
+
+Docente -> Vista : Seleccionar materia(idMateria)
+activate Vista
+Vista -> Ctrl : obtenerAlumnosParaEvaluar(idMateria)
+activate Ctrl
+Ctrl -> Service : listarAlumnos(idMateria)
+activate Service
+Service -> BD : buscarAlumnosInscriptos(idMateria)
+activate BD
+BD --> Service : ListaAlumnos
+deactivate BD
+Service --> Ctrl : ListaAlumnos
+deactivate Service
+Ctrl --> Vista : Mostrar planilla de alumnos
+deactivate Ctrl
+
+Docente -> Vista : Ingresar notas y confirmar
+Vista -> Ctrl : guardarNotas(idMateria, listadoNotas)
+activate Ctrl
+
+Ctrl -> Ctrl : validarCamposCompletos(listadoNotas)
+
+alt Excepción 5: Datos incompletos
+    Ctrl --> Vista : Mostrar error ("Campos requeridos vacíos")
+    Vista --> Docente : Informar datos incompletos
+else Datos Completos
+    Ctrl -> Service : registrarNotas(idMateria, listadoNotas)
+    activate Service
+    
+    Service -> Service : validarValoresNotas(listadoNotas)
+    
+    alt Excepción 1: Nota inválida
+        Service --> Ctrl : Error("Rango de nota no permitido")
+        Ctrl --> Vista : Mostrar error de validación
+        Vista --> Docente : Informar nota inválida
+    else Excepción 2 / 3: Alumno no inscripto o Materia inexistente
+        Service -> BD : verificarInscripciones(listadoNotas)
+        activate BD
+        BD --> Service : InconsistenciaDetectada
+        deactivate BD
+        Service --> Ctrl : Error("Alumno o materia no válida")
+        Ctrl --> Vista : Mostrar mensaje de inconsistencia
+        Vista --> Docente : Informar error de asociación
+    else Datos Válidos
+        Service -> BD : guardarNotasBD(listadoNotas)
+        activate BD
+        
+        alt Excepción 4: Error durante el registro
+            BD --> Service : ErrorPersistencia
+            Service --> Ctrl : Error("Fallo al guardar notas")
+            Ctrl --> Vista : Mostrar error del sistema
+            Vista --> Docente : Informar fallo de registro
+        else Guardado Exitoso (Secuencia Normal)
+            BD --> Service : Confirmación
+            deactivate BD
+            Service --> Ctrl : RegistroExitoso
+            deactivate Service
+            Ctrl --> Vista : ConfirmarOperacion("Notas registradas exitosamente")
+            deactivate Ctrl
+            Vista --> Docente : Mostrar mensaje de éxito
+            deactivate Vista
+        end
+    end
+end
+
+@enduml

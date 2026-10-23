@@ -1,0 +1,75 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-56 - Docente Carga Notas
+
+|Docente|
+start
+:Accede a la planilla de evaluación;
+
+|Interfaz|
+:Solicitar listado de alumnos e interfaz de carga;
+
+|Sistema|
+:Obtener planilla de alumnos e inscripciones;
+
+|Interfaz|
+:Desplegar planilla de carga de notas;
+
+repeat
+  |Docente|
+  :Ingresar o modificar notas de los alumnos;
+  :Guardar cambios de notas;
+
+  |Interfaz|
+  :Enviar notas ingresadas;
+
+  |Sistema|
+  :Validar completitud de campos requeridos;
+
+  if (§¿Campos obligatorios completos?) then (Si)
+    :Validar rango y formato de las notas;
+
+    if (§¿Rango y formato de notas válidos?) then (Si)
+      :Verificar inscripciones válidas de alumnos;
+
+      if (§¿Inscripciones válidas?) then (Si)
+        :Persistir notas en la base de datos;
+
+        if (§¿Registro exitoso?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de éxito:\nNotas registradas correctamente;
+
+          |Docente|
+          :Visualizar confirmación;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error\nal guardar en la BD;
+
+          |Docente|
+          :Visualizar mensaje de error;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nInconsistencia en inscripción de alumnos;
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nValor de nota fuera del rango permitido;
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nDebe completar todos los campos obligatorios;
+  endif
+
+  |Docente|
+repeat while (§¿Desea corregir los datos?) is (Si)
+stop
+@enduml

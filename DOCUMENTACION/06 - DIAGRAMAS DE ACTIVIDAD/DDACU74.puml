@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-74 - Estudiante Consulta Plan de Estudio
+
+|Estudiante|
+start
+:Selecciona la opción "Plan de Estudio";
+
+|Interfaz|
+:Solicitar estructura del Plan de Estudio;
+
+|Sistema|
+:Buscar la carrera y plan asignado al alumno;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Posee plan asignado?) then (Si)
+    :Verificar disponibilidad del plan;
+
+    if (§¿Plan activo / disponible?) then (Si)
+      :Recuperar materias organizadas por nivel y cuatrimestre;
+
+      |Interfaz|
+      :Mostrar la estructura completa del Plan de Estudio;
+
+      |Estudiante|
+      :Visualizar el plan de estudio;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de advertencia:\nEl plan de estudio no está disponible;
+
+      |Estudiante|
+      :Visualizar aviso;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nSin plan de estudio asignado;
+
+    |Estudiante|
+    :Visualizar mensaje de advertencia;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nError al recuperar información en BD;
+
+  |Estudiante|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

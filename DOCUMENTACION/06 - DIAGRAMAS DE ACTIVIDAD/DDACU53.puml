@@ -1,0 +1,57 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-53 - Docente Consulta Cursadas
+
+|Docente|
+start
+:Selecciona la opción "Mis Cursadas";
+
+|Interfaz|
+:Solicitar lista de cursadas asignadas;
+
+|Sistema|
+:Verificar autenticación del docente;
+
+if (§¿Docente autenticado?) then (Si)
+  :Buscar cursadas asignadas al docente;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Tiene cursadas asignadas?) then (Si)
+      :Recuperar cursadas activas y comisiones;
+
+      |Interfaz|
+      :Mostrar listado de cursadas y comisiones;
+
+      |Docente|
+      :Visualizar sus cursadas;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje:\nNo posee cursadas ni materias asignadas;
+
+      |Docente|
+      :Visualizar mensaje;
+      stop
+    endif
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura en la BD;
+
+    |Docente|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Docente|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

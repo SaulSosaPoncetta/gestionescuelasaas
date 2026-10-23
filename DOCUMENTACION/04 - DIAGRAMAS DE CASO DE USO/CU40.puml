@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Estudiante" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-40: Dar de Baja Inscripción a Mesa" as CU40
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Estudiante Autenticado e\nInscripción Asociada (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Consultar Inscripciones y Seleccionar Registro" as Sec1
+    usecase "Solicitar Baja y Verificar Pertenencia de Datos" as Sec2
+    usecase "Verificar Disponibilidad Temporal y Procesar Baja" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Inscripción Cancelada en el Sistema\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Inscripción Inexistente" as Exc1
+    usecase "Exc 2: Inscripción Perteneciente a Otro Estudiante" as Exc2
+    usecase "Exc 3: Mesa no Disponible para Baja" as Exc3
+    usecase "Exc 4: Error de Actualización" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU40
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU40 ..> Precond : <<include>>
+    CU40 ..> Sec1 : <<include>>
+    CU40 ..> Sec2 : <<include>>
+    CU40 ..> Sec3 : <<include>>
+    CU40 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+}
+@enduml

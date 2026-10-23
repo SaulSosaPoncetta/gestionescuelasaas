@@ -1,0 +1,61 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-01 - Iniciar Sesión
+
+|Usuario|
+start
+:Accede a la pantalla\nde inicio de sesión;
+:Ingresa sus credenciales;
+
+|Interfaz|
+:Enviar credenciales;
+
+|Sistema|
+if (¿Datos\nincompletos?) then (Sí)
+|Interfaz|
+:Mostrar mensaje de error\n"Datos incompletos";
+|Usuario|
+stop
+else (No)
+|Sistema|
+if (¿Error de conexión\ncon la Base de Datos?) then (Sí)
+|Interfaz|
+:Mostrar mensaje de error\n"Error de conexión";
+|Usuario|
+stop
+else (No)
+|Sistema|
+if (¿Usuario existe y\ncredenciales válidas?) then (No)
+|Interfaz|
+:Mostrar mensaje de error\n"Credenciales incorrectas";
+|Usuario|
+stop
+else (Sí)
+|Sistema|
+if (¿Usuario\nhabilitado / activo?) then (No)
+|Interfaz|
+:Mostrar mensaje de error\n"Usuario inactivo";
+|Usuario|
+stop
+else (Sí)
+|Sistema|
+:Registrar inicio de sesión;
+:Crear sesión del usuario;
+
+    |Interfaz|
+    :Redirigir a interfaz según\nperfil (Admin, Docente, etc.);
+    
+    |Usuario|
+    :Acceder al panel principal;
+    stop
+  endif
+endif
+
+
+endif
+endif
+
+@enduml

@@ -1,0 +1,99 @@
+.analitico-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+/* Select de carrera más ancho. !important porque otro CSS cargado
+   en esta pantalla (form-grid genérico) lo pisa con un ancho menor. */
+.analitico-top #select-carrera {
+    width: 320px !important;
+    max-width: 100% !important;
+}
+
+.analitico-stats {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+}
+
+.stat-numero {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.stat-progreso {
+    gap: 14px;
+}
+
+.progress-ring {
+    position: relative;
+    width: 72px;
+    height: 72px;
+}
+
+.progress-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-bg,
+.progress-ring-fill {
+    fill: none;
+    stroke-width: 10;
+}
+
+.progress-ring-bg {
+    stroke: #e5e7eb;
+}
+
+.progress-ring-fill {
+    stroke: #22c55e;
+    stroke-linecap: round;
+    /* stroke-dasharray y stroke-dashoffset se setean por JS */
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.progress-ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+/* Contenedor de tablas por año */
+.anio-titulo {
+    margin: 24px 0 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.anio-titulo:first-child {
+    margin-top: 12px;
+}
+
+.table-container {
+    max-height: 320px;
+    overflow-y: auto;
+}

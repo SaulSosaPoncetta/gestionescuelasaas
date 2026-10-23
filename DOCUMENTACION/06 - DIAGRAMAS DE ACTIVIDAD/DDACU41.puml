@@ -1,0 +1,57 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-41 - Consultar Carrera como Estudiante
+
+|Estudiante|
+start
+:Accede a la opción "Carrera";
+
+|Interfaz|
+:Solicitar información de carrera;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Identificar al estudiante en sesión;
+  :Recuperar carreras asociadas en la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Posee carreras asociadas?) then (Si)
+      |Interfaz|
+      :Mostrar la información de la(s)\ncarrera(s) asociada(s);
+      
+      |Estudiante|
+      :Visualizar los datos de la carrera;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nEstudiante sin carrera asociada;
+      
+      |Estudiante|
+      :Contactar con administración;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura / consulta en BD;
+    
+    |Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

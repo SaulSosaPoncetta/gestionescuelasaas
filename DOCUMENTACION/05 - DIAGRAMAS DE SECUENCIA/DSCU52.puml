@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaPerfil" as Vista
+control "PerfilController" as Ctrl
+entity "DocenteService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-52: Docente Consulta Sus Datos
+
+Docente -> Vista : Seleccionar opción "Mis Datos"
+activate Vista
+Vista -> Ctrl : obtenerPerfilDocente()
+activate Ctrl
+
+Ctrl -> Service : obtenerDatosDocente(idUsuarioAutenticado)
+activate Service
+Service -> BD : buscarDocentePorUsuarioId(idUsuario)
+activate BD
+BD --> Service : DatosDocente / null
+deactivate BD
+
+alt Excepción 1: No existe información asociada al usuario
+    Service --> Ctrl : Error("No se encontraron datos de perfil")
+    Ctrl --> Vista : Mostrar mensaje de alerta
+    Vista --> Docente : Informar falta de información
+else Excepción 2: El usuario no corresponde a un docente
+    Service --> Ctrl : Error("El usuario no tiene rol docente")
+    Ctrl --> Vista : Mostrar mensaje de error de acceso
+    Vista --> Docente : Informar rol no válido
+else Excepción 3: Error al obtener los datos
+    Service --> Ctrl : Error("Error en la base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error del sistema
+    Vista --> Docente : Informar fallo de sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ObjetoDocente
+    deactivate Service
+    Ctrl --> Vista : MostrarPerfil(ObjetoDocente)
+    deactivate Ctrl
+    Vista --> Docente : Presentar datos personales y perfil
+    deactivate Vista
+end
+
+@enduml

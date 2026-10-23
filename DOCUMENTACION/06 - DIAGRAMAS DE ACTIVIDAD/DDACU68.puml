@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-68 - Estudiante Consulta Materias para Matriculación
+
+|Estudiante|
+start
+:Selecciona "Matriculación a Materias";
+
+|Interfaz|
+:Solicitar catálogo de materias disponibles;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Verificar condición académica del estudiante;
+
+  if (§¿Cumple condiciones académicas requeridas?) then (Si)
+    :Consultar oferta de materias habilitadas para el período;
+
+    if (§¿Consulta exitosa?) then (Si)
+      if (§¿Existen materias disponibles?) then (Si)
+        |Interfaz|
+        :Mostrar catálogo de materias disponibles para inscripción;
+
+        |Estudiante|
+        :Visualizar la oferta de materias;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje:\nNo existen materias disponibles para matricular;
+
+        |Estudiante|
+        :Visualizar aviso de oferta vacía;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError al consultar materias en BD;
+
+      |Estudiante|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nNo cumple las condiciones requeridas para matricularse;
+
+    |Estudiante|
+    :Visualizar restricción de acceso;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

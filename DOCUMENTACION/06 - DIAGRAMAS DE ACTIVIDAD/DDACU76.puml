@@ -1,0 +1,46 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-76 - Estudiante Consulta Historial de Finales
+
+|Estudiante|
+start
+:Selecciona la opción "Historial de Finales";
+
+|Interfaz|
+:Solicitar registros de exámenes finales rendidos;
+
+|Sistema|
+:Consultar antecedentes de exámenes finales en la base de datos;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Existen finales rendidos?) then (Si)
+    :Organizar exámene finales por fecha y materia;
+
+    |Interfaz|
+    :Mostrar listado del historial con nota, libro, tomo y condición;
+
+    |Estudiante|
+    :Visualizar su historial de finales;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje:\nSin registros históricos de finales rendidos;
+
+    |Estudiante|
+    :Visualizar historial vacío;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nError durante la consulta en BD;
+
+  |Estudiante|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

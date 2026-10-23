@@ -1,0 +1,72 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-29 - Restaurar Estudiante en Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona la materia;
+:Selecciona al estudiante;
+:Solicita restaurar situación de cursada;
+
+|Interfaz|
+:Enviar solicitud de restauración\npara el estudiante seleccionado;
+
+|Sistema|
+:Buscar materia en la base de datos;
+
+if (§¿Materia existe?) then (Si)
+  :Verificar si el estudiante existe\ny está asociado a la materia;
+  
+  if (§¿Estudiante existe y está asociado?) then (Si)
+    :Verificar si existe una situación\nmodificable (ej. Reprobado);
+    
+    if (§¿Existe situación modificable?) then (Si)
+      :Restaurar la situación académica\ndel estudiante al estado previo de cursada;
+      
+      if (§¿Actualización exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde restauración exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar el estado de cursada\nrestaurado del estudiante;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nFalla al actualizar estado en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: El estudiante\nno posee una situación modificable;
+      
+      |Administrador / Secretaría|
+      :Visualizar aviso y regresar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante inexistente o no asociado;
+    
+    |Administrador / Secretaría|
+    :Regresar a la lista de estudiantes;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

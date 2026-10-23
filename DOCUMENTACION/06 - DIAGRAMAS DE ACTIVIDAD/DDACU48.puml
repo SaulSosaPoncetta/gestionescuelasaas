@@ -1,0 +1,96 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-48 - Consultar Situación Académica para Final
+
+|Sistema / Estudiante|
+start
+:Solicita verificar situación académica\npara rendir examen final de una materia;
+
+|Interfaz|
+:Enviar solicitud de verificación\n(Estudiante y Materia);
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Verificar existencia de la materia;
+  
+  if (§¿Materia existe?) then (Si)
+    :Verificar carrera activa del estudiante;
+    
+    if (§¿Carrera activa?) then (Si)
+      :Consultar situación de cursada\ndel estudiante en la materia;
+      
+      if (§¿Existe situación de cursada válida?) then (Si)
+        :Verificar si el final de la materia\nya fue aprobado anteriormente;
+        
+        if (§¿Materia ya aprobada?) then (No)
+          :Verificar cumplimiento de correlativas\n(vía EstudianteFinalesService);
+          
+          if (§¿Correlativas cumplidas?) then (Si)
+            :Determinar que el estudiante está\nHABILITADO para rendir la mesa;
+            
+            |Interfaz|
+            :Devolver resultado: Habilitado para inscripcion;
+            
+            |Sistema / Estudiante|
+            :Visualizar estado de habilitación para el final;
+            stop
+          else (No)
+            |Interfaz|
+            :Devolver resultado/error:\nCorrelativas no cumplidas;
+            
+            |Sistema / Estudiante|
+            :Visualizar rechazo por falta de correlativas;
+            stop
+          endif
+
+        else (Si)
+          |Interfaz|
+          :Devolver resultado/error:\nMateria ya aprobada previamente;
+          
+          |Sistema / Estudiante|
+          :Visualizar rechazo por materia ya aprobada;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Devolver resultado/error:\nNo existe situación de cursada válida;
+        
+        |Sistema / Estudiante|
+        :Visualizar rechazo por cursada inexistente/regularidad;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Devolver resultado/error:\nCarrera inactiva;
+      
+      |Sistema / Estudiante|
+      :Visualizar rechazo por carrera inactiva;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Devolver resultado/error:\nMateria inexistente;
+    
+    |Sistema / Estudiante|
+    :Visualizar error de materia no encontrada;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Sistema / Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

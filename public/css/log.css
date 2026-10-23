@@ -1,0 +1,148 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.top {
+    background: #153554;
+    height: 180px;
+    border-bottom-left-radius: 50% 15px;
+    border-bottom-right-radius: 50% 75px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Logo acotado — nunca más de 160px ni más del 40% del ancho */
+.top img {
+    max-height: 230px;
+    max-width: min(280px, 40%);
+    width: auto;
+    object-fit: contain;
+}
+
+.container {
+    text-align: center;
+    margin-top: 50px;
+    padding: 0 16px; /* evita que en mobile el form toque los bordes */
+}
+
+.g-recaptcha {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    /* En pantallas chicas el captcha puede desbordar — lo escalamos */
+    transform-origin: center top;
+}
+
+input {
+    display: block;
+    margin: 15px auto;
+    padding: 10px;
+    width: min(250px, 100%); /* nunca más ancho que el contenedor en mobile */
+    border: none;
+    border-bottom: 2px solid #ccc;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+}
+
+button {
+    background: #0F62FE;
+    color: white;
+    border: none;
+    padding: 15px 55px;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-top: 30px;
+    font-size: 15px;
+}
+
+footer {
+    background-color: #2C2C2C;
+    color: rgb(218, 218, 218);
+    height: 50px;
+    font-size: small;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 30px;
+}
+
+.container a {
+    color: #1068B1;
+    font-size: 16px;
+    margin-top: 30px;
+    display: block;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────── */
+
+/* Pantallas pequeñas (móvil) */
+@media (max-width: 480px) {
+    .top {
+        height: 140px;
+        border-bottom-left-radius: 50% 10px;
+        border-bottom-right-radius: 50% 40px;
+    }
+
+    .top img {
+        max-height: 80px;
+    }
+
+    .container {
+        margin-top: 30px;
+        padding: 0 24px;
+    }
+
+    /* Inputs y botón ocupan todo el ancho disponible en mobile */
+    input {
+        width: 100%;
+        font-size: 16px; /* 16px evita que iOS haga zoom al enfocar el input */
+    }
+
+    button {
+        width: 100%;
+        padding: 14px 0;
+        font-size: 16px;
+    }
+
+    .container a {
+        font-size: 14px;
+    }
+
+    /* Escala el reCAPTCHA para que entre en pantallas angostas */
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: center top;
+    }
+}
+
+/* Pantallas muy grandes (1080p+, 2K) — igual que homeSec: limitamos el ancho central */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Mensaje de error de login */
+.error-msg {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    text-align: center;
+}

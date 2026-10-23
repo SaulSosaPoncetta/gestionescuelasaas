@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-33 - Modificar Mesa de Examen
+
+|Administrador / Secretaría|
+start
+:Selecciona la mesa de examen\npara modificar;
+
+|Interfaz|
+:Solicitar información\nde la mesa seleccionada;
+
+|Sistema|
+:Buscar mesa de examen\nen la base de datos;
+
+if (§¿Mesa de examen existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con la\ninformación de la mesa;
+  
+  |Administrador / Secretaría|
+  :Modifica los datos deseados\n(fecha, hora, docentes, etc.) y confirma;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar completitud de datos\ny validez de la fecha/hora;
+  
+  if (§¿Datos completos y fecha válida?) then (Si)
+    :Actualizar la mesa de examen\nen la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar la mesa de examen\nactualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError de actualización en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nDatos incompletos o fecha inválida;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos ingresados;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMesa de examen inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de mesas;
+  stop
+endif
+
+@enduml

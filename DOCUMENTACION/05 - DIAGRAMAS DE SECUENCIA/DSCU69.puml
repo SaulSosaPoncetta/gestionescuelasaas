@@ -1,0 +1,77 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaMatriculacion" as Vista
+control "CursadaEstController" as Ctrl
+entity "MatriculacionService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-69: Estudiante se Matricula en una Materia
+
+Alumno -> Vista : Acceder a la sección de matriculación
+activate Vista
+Vista -> Ctrl : obtenerMateriasDisponibles()
+activate Ctrl
+Ctrl --> Vista : Mostrar materias disponibles
+deactivate Ctrl
+
+Alumno -> Vista : Seleccionar materia(idMateria) y confirmar
+Vista -> Ctrl : matricularse(idMateria)
+activate Ctrl
+
+Ctrl -> Service : procesarMatriculacion(idAlumnoAutenticado, idMateria)
+activate Service
+
+Service -> BD : verificarMateriaDisponible(idMateria)
+activate BD
+BD --> Service : Disponible / NoDisponible
+deactivate BD
+
+alt Excepción 1: La materia no se encuentra disponible
+    Service --> Ctrl : Error("Materia no disponible")
+    Ctrl --> Vista : Mostrar error de disponibilidad
+    Vista --> Alumno : Informar materia no disponible
+else Materia Disponible
+    Service -> BD : verificarInscripcionExistente(idAlumno, idMateria)
+    activate BD
+    BD --> Service : Existe / NoExiste
+    deactivate BD
+
+    alt Excepción 2: El alumno ya se encuentra matriculado
+        Service --> Ctrl : Error("Ya está matriculado en esta materia")
+        Ctrl --> Vista : Mostrar mensaje de duplicidad
+        Vista --> Alumno : Informar matriculación previa
+    else No Matriculado Previamente
+        Service -> Service : validarRequisitos(idAlumno, idMateria)
+        
+        alt Excepción 3: El alumno no cumple las condiciones requeridas
+            Service --> Ctrl : Error("No cumple con las correlatividades/condiciones")
+            Ctrl --> Vista : Mostrar mensaje de falta de requisitos
+            Vista --> Alumno : Informar condiciones no cumplidas
+        else Requisitos Aprobados
+            Service -> BD : guardarMatriculacion(idAlumno, idMateria)
+            activate BD
+            
+            alt Excepción 4: Error al registrar la matriculación
+                BD --> Service : ErrorBD
+                Service --> Ctrl : Error("Error al guardar la matriculación")
+                Ctrl --> Vista : Mostrar error del sistema
+                Vista --> Alumno : Informar fallo en el registro
+            else Matriculación Exitosa (Secuencia Normal)
+                BD --> Service : ConfirmacionRegistro
+                deactivate BD
+                Service --> Ctrl : MatriculacionExitosa
+                deactivate Service
+                Ctrl --> Vista : InformarExito("Matriculación realizada correctamente")
+                deactivate Ctrl
+                Vista --> Alumno : Confirmar la operación realizada
+                deactivate Vista
+            end
+        end
+    end
+end
+
+@enduml

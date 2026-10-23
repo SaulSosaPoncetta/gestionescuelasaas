@@ -1,0 +1,20 @@
+.estado-ok,
+.estado-no{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.estado-ok{
+    color: #16a34a;
+}
+
+.estado-no{
+    color: #6b7280;
+}
+
+.estado-ok i,
+.estado-no i{
+    font-size: 1.2rem;
+}

@@ -1,0 +1,116 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "MesaExamenUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "MesaExamenController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Mesa ==
+
+Actor -> UI: Seleccionar mesa de examen
+activate UI
+
+UI -> Ctrl: consultarMesa(idMesa)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> DB: consultarMesa(idMesa)
+    activate DB
+    return informacionMesa
+
+    alt Excepción 1: Mesa inexistente
+
+        Ctrl --> UI: error: La mesa no existe
+        UI --> Actor: Mostrar mensaje "La mesa de examen seleccionada no existe"
+
+    else Mesa existente
+
+        Ctrl --> UI: mostrarInformacionMesa(informacionMesa)
+        UI --> Actor: Mostrar información de la mesa
+
+        == Fase 2: Modificación de Datos ==
+
+        Actor -> UI: Modificar datos de la mesa
+        Actor -> UI: Confirmar modificación
+
+        UI -> Ctrl: modificarMesa(datos)
+        
+        Ctrl -> Ctrl: validarDatos(datos)
+
+        alt Excepción 2: Fecha inválida
+
+            Ctrl --> UI: error: Fecha inválida
+            UI --> Actor: Mostrar mensaje "La fecha ingresada no es válida"
+
+        else Fecha válida
+
+            alt Excepción 3: Datos incompletos
+
+                Ctrl --> UI: error: Datos incompletos
+                UI --> Actor: Mostrar mensaje "Complete todos los datos requeridos"
+
+            else Datos completos
+
+                == Fase 3: Actualización de la Mesa ==
+
+                Ctrl -> DB: actualizarMesa(datos)
+                activate DB
+
+                alt Excepción 4: Error de actualización
+
+                    DB --> Ctrl: error: No se pudo actualizar la mesa
+                    Ctrl --> UI: error: Error de actualización
+                    UI --> Actor: Mostrar mensaje "No se pudo actualizar la mesa"
+
+                else Actualización exitosa
+
+                    return actualizacionOK
+
+                    Ctrl --> UI: confirmarOperacion
+                    deactivate Ctrl
+
+                    UI --> Actor: El sistema confirma la operación: "Mesa de examen actualizada correctamente"
+                    deactivate UI
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

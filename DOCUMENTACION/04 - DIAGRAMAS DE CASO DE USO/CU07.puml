@@ -1,0 +1,48 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-07: Registrar Administrador" as CU07
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Autenticación y Permisos Administrativos\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Solicitar Alta y Mostrar Formulario" as Sec1
+    usecase "Ingresar Datos Personales y de Acceso" as Sec2
+    usecase "Validar Información, Crear Usuario y Asignar Rol" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Nuevo Administrador Registrado\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 3: Datos Obligatorios Incompletos" as Exc3
+    usecase "Exc 1: DNI Duplicado" as Exc1
+    usecase "Exc 2: Usuario Duplicado" as Exc2
+    usecase "Exc 4: Datos Inválidos" as Exc4
+    usecase "Exc 5: Error Durante la Transacción" as Exc5
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU07
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU07 ..> Precond : <<include>>
+    CU07 ..> Sec1 : <<include>>
+    CU07 ..> Sec2 : <<include>>
+    CU07 ..> Sec3 : <<include>>
+    CU07 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso donde ocurren)
+    Exc3 ..> Sec2 : <<extend>>
+    Exc1 ..> Sec3 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+    Exc5 ..> Sec3 : <<extend>>
+}
+@enduml

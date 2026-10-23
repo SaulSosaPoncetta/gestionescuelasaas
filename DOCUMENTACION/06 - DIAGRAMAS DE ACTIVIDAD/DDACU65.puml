@@ -1,0 +1,42 @@
+@startuml
+skinparam Style strictuml
+title Diagrama de Actividad - CU-65: Estudiante Inicia Sesión
+
+start
+:Estudiante ingresa a la aplicación;
+:Solicitar credenciales (Usuario y Contraseña);
+
+repeat
+  :Ingresar Usuario y Contraseña;
+  :Validar existencia del usuario en la Base de Datos;
+  
+  if (¿El usuario existe?) then (No)
+    #LightGray:Excepción 2: Usuario no registrado;
+    :Mostrar mensaje de error ("Usuario no registrado");
+  else (Sí)
+    :Validar contraseña;
+    if (¿Contraseña correcta?) then (No)
+      #LightGray:Excepción 1: Credenciales incorrectas;
+      :Mostrar mensaje de error ("Contraseña inválida");
+    else (Sí)
+      :Verificar rol del usuario;
+      if (¿El usuario posee el rol de Alumno?) then (No)
+        #LightGray:Excepción 3: Rol no adecuado;
+        :Mostrar mensaje ("Acceso denegado: El usuario no es Alumno");
+        stop
+      else (Sí)
+        if (¿Error en comunicación/servidor?) then (Sí)
+          #LightGray:Excepción 4: Error durante la autenticación;
+          :Mostrar mensaje de error del sistema;
+          stop
+        else (No)
+          :Generar sesión de usuario;
+          :Redirigir al Panel Principal del Estudiante;
+          stop
+        endif
+      endif
+    endif
+  endif
+repeat while (¿Reintentar ingreso?) is (Sí)
+stop
+@enduml

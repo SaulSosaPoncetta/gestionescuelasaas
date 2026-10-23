@@ -1,0 +1,48 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaMateriaEst" as Vista
+control "MateriaEstController" as Ctrl
+entity "MateriaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-75: Estudiante Consulta Perfil de una Materia
+
+Alumno -> Vista : Seleccionar una materia(idMateria)
+activate Vista
+Vista -> Ctrl : verPerfilMateria(idMateria)
+activate Ctrl
+
+Ctrl -> Service : consultarPerfilMateriaEstudiante(idMateria)
+activate Service
+Service -> BD : buscarMateriaPorId(idMateria)
+activate BD
+BD --> Service : ObjetoMateria / null
+deactivate BD
+
+alt Excepción 1: La materia no existe
+    Service --> Ctrl : Error("Materia no encontrada")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Alumno : Informar materia inexistente
+else Excepción 2: La materia no se encuentra disponible
+    Service -> Service : verificarEstadoMateria(ObjetoMateria)
+    Service --> Ctrl : Error("Materia fuera de oferta/no disponible")
+    Ctrl --> Vista : Mostrar advertencia de indisponibilidad
+    Vista --> Alumno : Informar que la materia no está disponible
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Fallo de conexión en BD")
+    Ctrl --> Vista : Mostrar mensaje de error de sistema
+    Vista --> Alumno : Informar fallo al consultar
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : PerfilMateria
+    deactivate Service
+    Ctrl --> Vista : MostrarPerfilMateria(PerfilMateria)
+    deactivate Ctrl
+    Vista --> Alumno : Presentar perfil e información detallada de la materia
+    deactivate Vista
+end
+
+@enduml

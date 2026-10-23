@@ -1,0 +1,43 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaFinalesDocente" as Vista
+control "FinalesDocController" as Ctrl
+entity "MesaExamenService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-59: Docente Consulta Finales
+
+Docente -> Vista : Acceder a la sección de finales
+activate Vista
+Vista -> Ctrl : consultarMesasFinalesDocente()
+activate Ctrl
+
+Ctrl -> Service : obtenerMesasPorDocente(idDocenteAutenticado)
+activate Service
+Service -> BD : buscarMesasExamen(idDocente)
+activate BD
+BD --> Service : ListaMesas / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1 / 2: No existen finales disponibles / registros asociados
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("No hay mesas de examen disponibles")
+    Vista --> Docente : Informar falta de registros
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Fallo en la base de datos")
+    Ctrl --> Vista : Mostrar error del sistema
+    Vista --> Docente : Informar error de consulta
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaMesas
+    deactivate Service
+    Ctrl --> Vista : PresentarMesasExamen(ListaMesas)
+    deactivate Ctrl
+    Vista --> Docente : Mostrar mesas de examen e información de finales
+    deactivate Vista
+end
+
+@enduml

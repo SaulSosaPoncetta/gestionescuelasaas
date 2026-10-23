@@ -1,0 +1,78 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "GestionCursadaUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "CursadaController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Seleccionar una materia del listado
+activate UI
+
+Actor -> UI: Seleccionar al estudiante de la lista de alumnos
+
+Actor -> UI: Solicitar botón "Establecer Reprobación"
+
+UI -> Ctrl: registrarReprobacionDirecta(materiaId, estudianteId)
+activate Ctrl
+
+== Verificación de Materia (Precondición 1) ==
+Ctrl -> DB: verificarMateriaExiste(materiaId)
+activate DB
+return materiaExiste
+
+alt Excepción 2: Materia inexistente
+    Ctrl --> UI: error: Materia no válida
+    UI --> Actor: Mostrar mensaje "Error: La materia seleccionada no existe en el sistema"
+else Materia válida
+    
+    == Verificación de Asociación (Precondición 2) ==
+    Ctrl -> DB: verificarEstudianteAsociado(materiaId, estudianteId)
+    activate DB
+    return estaAsociado
+    
+    alt Excepción 1: Estudiante no asociado
+        Ctrl --> UI: error: El alumno no cursa esta materia
+        UI --> Actor: Mostrar mensaje "Error: El estudiante seleccionado no se encuentra asociado a la materia"
+        
+    else Estudiante asociado válidamente
+        
+        == Actualización Directa de Situación Académica ==
+        Ctrl -> DB: actualizarEstadoCursada(materiaId, estudianteId, "REPROBADO")
+        activate DB
+        
+        alt Excepción 3: Error de actualización
+            DB --> Ctrl: error: SQLException / ConnectionTimeout
+            Ctrl --> UI: error: No se pudo modificar el registro
+            UI --> Actor: Mostrar mensaje "Error interno al actualizar la situación académica, intente de nuevo"
+        else Transacción exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: cambioEstadoExitosoConfirmed
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Situación académica registrada como reprobada"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

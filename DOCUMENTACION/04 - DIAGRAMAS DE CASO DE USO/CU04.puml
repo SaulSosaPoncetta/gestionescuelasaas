@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Usuario Autenticado" as User
+actor "Estudiante" as Est
+
+' Herencia de Actores (Estudiante es un Usuario Autenticado)
+Est -up-|> User
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal y sus especializaciones
+    usecase "CU-04: Consultar Perfil" as CU04
+    usecase "Consultar Perfil Estudiante" as CU04_Est
+    usecase "Consultar Perfil General" as CU04_Gen
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Autenticación\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a 'Mis datos'" as Sec1
+    usecase "Identificar Usuario y Recuperar Datos" as Sec2
+    usecase "Mostrar Información Personal" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Información Disponible para Consulta\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Usuario No Autenticado" as Exc1
+    usecase "Exc 2: Datos Inexistentes" as Exc2
+
+    ' Conexión del Actor Base al caso raíz
+    User --> CU04
+
+    ' Herencia / Especialización de Casos de Uso (Comentarios del requerimiento)
+    CU04_Est --|> CU04
+    CU04_Gen --|> CU04
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU04 ..> Precond : <<include>>
+    CU04 ..> Sec1 : <<include>>
+    CU04 ..> Sec2 : <<include>>
+    CU04 ..> Sec3 : <<include>>
+    CU04 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

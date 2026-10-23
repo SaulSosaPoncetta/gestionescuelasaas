@@ -1,0 +1,91 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-36 - Modificar Notas de Examen Final
+
+|Administrador / Secretaría|
+start
+:Selecciona la mesa de examen;
+
+|Interfaz|
+:Solicitar datos de la mesa de examen;
+
+|Sistema|
+:Buscar mesa de examen en la base de datos;
+
+if (§¿Mesa de examen existe?) then (Si)
+  |Interfaz|
+  :Mostrar lista de estudiantes\ne historias de calificaciones;
+  
+  |Administrador / Secretaría|
+  :Selecciona al estudiante;
+  
+  |Interfaz|
+  :Solicitar calificación actual del estudiante;
+  
+  |Sistema|
+  :Verificar estudiante y recuperar\ncalificación previamente registrada;
+  
+  if (§¿Estudiante existe y posee\ncalificación registrada?) then (Si)
+    |Interfaz|
+    :Mostrar la calificación actual\ny campo para modificar;
+    
+    |Administrador / Secretaría|
+    :Modifica la nota y confirma la operación;
+    
+    |Interfaz|
+    :Enviar la nueva nota;
+    
+    |Sistema|
+    :Validar rango y formato de la nueva nota;
+    
+    if (§¿Nueva nota es válida?) then (Si)
+      :Actualizar la calificación del examen final;
+      :Recalcular / actualizar la situación\nacadémica correspondiente;
+      
+      if (§¿Actualización exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde modificación exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar la calificación corregida;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de actualización en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nNota ingresada inválida;
+      
+      |Administrador / Secretaría|
+      :Corregir el valor de la nota;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante inexistente o sin nota registrada;
+    
+    |Administrador / Secretaría|
+    :Regresar a la lista de estudiantes;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMesa de examen inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de mesas;
+  stop
+endif
+
+@enduml

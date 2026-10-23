@@ -1,0 +1,43 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaHistorialFinalesEst" as Vista
+control "EstudianteFinalesController" as Ctrl
+entity "HistorialFinalesService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-76: Estudiante Consulta Historial de Finales
+
+Alumno -> Vista : Acceder a la sección de historial de finales
+activate Vista
+Vista -> Ctrl : obtenerHistorialFinalesEstudiante()
+activate Ctrl
+
+Ctrl -> Service : consultarHistorialFinalesAlumno(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarFinalesRendidosPorAlumno(idAlumno)
+activate BD
+BD --> Service : ListaHistorial / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1: No existen registros históricos de finales
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("Sin registro de exámenes finales rendidos")
+    Vista --> Alumno : Informar ausencia de historial de finales
+else Excepción 2: Error durante la consulta
+    Service --> Ctrl : Error("Error al consultar la base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error del sistema
+    Vista --> Alumno : Informar falla en la obtención de datos
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaHistorial
+    deactivate Service
+    Ctrl --> Vista : MostrarHistorialFinales(ListaHistorial)
+    deactivate Ctrl
+    Vista --> Alumno : Presentar el historial de finales rendidos
+    deactivate Vista
+end
+
+@enduml

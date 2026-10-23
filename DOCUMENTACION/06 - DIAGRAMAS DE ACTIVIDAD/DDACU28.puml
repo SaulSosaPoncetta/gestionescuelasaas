@@ -1,0 +1,60 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-28 - Reprobar Estudiante en Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona la materia;
+:Selecciona al estudiante;
+:Solicita reprobar al estudiante;
+
+|Interfaz|
+:Enviar solicitud de reprobación\npara el estudiante seleccionado;
+
+|Sistema|
+:Buscar materia en la base de datos;
+
+if (§¿Materia existe?) then (Si)
+  :Verificar si el estudiante\nestá asociado a la materia;
+  
+  if (§¿Estudiante asociado?) then (Si)
+    :Actualizar situación académica\ndel estudiante a "Reprobado";
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de confirmación\nde reprobación exitosa;
+      
+      |Administrador / Secretaría|
+      :Visualizar el estado del estudiante\nactualizado como "Reprobado";
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar estado en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante no asociado a la materia;
+    
+    |Administrador / Secretaría|
+    :Regresar a la lista de estudiantes;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

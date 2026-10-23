@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-12 - Modificar Docente
+
+|Administrador / Secretaría|
+start
+:Selecciona un docente\npara modificar;
+
+|Interfaz|
+:Solicitar datos del\ndocente seleccionado;
+
+|Sistema|
+:Buscar docente\nen la base de datos;
+
+if (§¿Docente existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con los\ndatos del docente;
+  
+  |Administrador / Secretaría|
+  :Modifica la información\ny confirma la operación;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar consistencia y\nformato de los datos;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Actualizar información del\ndocente en la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar datos\ndel docente actualizados;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nDocente inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado;
+  stop
+endif
+
+@enduml

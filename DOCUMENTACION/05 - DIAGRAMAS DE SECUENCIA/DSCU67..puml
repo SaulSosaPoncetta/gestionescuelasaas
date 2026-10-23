@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaCursadasEst" as Vista
+control "CursadaEstController" as Ctrl
+entity "CursadaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-67: Estudiante Consulta Cursadas
+
+Alumno -> Vista : Acceder a la sección de cursadas
+activate Vista
+Vista -> Ctrl : obtenerCursadasAlumno()
+activate Ctrl
+
+Ctrl -> Service : consultarCursadasYEstados(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarCursadasAlumno(idAlumno)
+activate BD
+BD --> Service : ListaCursadas / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1: El alumno no posee cursadas registradas
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("Sin cursadas registradas")
+    Vista --> Alumno : Informar falta de registros
+else Excepción 2: No se encuentran materias asociadas
+    Service --> Ctrl : Error("Materias asociadas no encontradas")
+    Ctrl --> Vista : Mostrar advertencia
+    Vista --> Alumno : Informar incoherencia de materias
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Error en servidor")
+    Ctrl --> Vista : Mostrar error de sistema
+    Vista --> Alumno : Informar falla en la consulta
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaCursadas
+    deactivate Service
+    Ctrl --> Vista : PresentarCursadas(ListaCursadas)
+    deactivate Ctrl
+    Vista --> Alumno : Mostrar cursadas y estado académico
+    deactivate Vista
+end
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-49: Actualizar Plan de Estudio" as CU49
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Plan y\nPermisos de Usuario (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Plan y Recuperar Información" as Sec1
+    usecase "Modificar Datos y Reemplazar Documentación" as Sec2
+    usecase "Validar Datos, Procesar Archivo y Actualizar Plan" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Plan de Estudio Actualizado\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Plan Inexistente" as Exc1
+    usecase "Exc 3: Archivo Inválido" as Exc3
+    usecase "Exc 2: Datos Inválidos" as Exc2
+    usecase "Exc 4: Error de Actualización" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU49
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU49 ..> Precond : <<include>>
+    CU49 ..> Sec1 : <<include>>
+    CU49 ..> Sec2 : <<include>>
+    CU49 ..> Sec3 : <<include>>
+    CU49 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+}
+@enduml

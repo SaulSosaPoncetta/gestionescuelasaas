@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-42 - Consultar Plan de Estudio como Estudiante
+
+|Estudiante|
+start
+:Accede a la opción "Plan de Estudio";
+
+|Interfaz|
+:Solicitar plan de estudio;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Identificar la carrera asociada al estudiante;
+  
+  if (§¿Carrera asociada existe?) then (Si)
+    :Recuperar el plan de estudio registrado\npara la carrera correspondiente;
+    
+    if (§¿Consulta exitosa?) then (Si)
+      if (§¿Plan de estudio existe para la carrera?) then (Si)
+        |Interfaz|
+        :Mostrar materias, correlatividades\ny estructura del plan de estudio;
+        
+        |Estudiante|
+        :Visualizar la información\ndel plan de estudio;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nCarrera sin plan de estudio o plan inexistente;
+        
+        |Estudiante|
+        :Contactar con secretaría/administración;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error\nde lectura / consulta en BD;
+      
+      |Estudiante|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante sin carrera asociada;
+    
+    |Estudiante|
+    :Contactar con administración;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

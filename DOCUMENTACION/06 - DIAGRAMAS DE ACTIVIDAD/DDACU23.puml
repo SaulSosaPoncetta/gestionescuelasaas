@@ -1,0 +1,82 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-23 - Registrar Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona una carrera;
+
+|Interfaz|
+:Solicitar verificación de la carrera;
+
+|Sistema|
+:Buscar carrera en la base de datos;
+
+if (§¿Carrera existe?) then (Si)
+  |Interfaz|
+  :Mostrar opción "Agregar materia"\ny formulario de registro;
+  
+  |Administrador / Secretaría|
+  :Selecciona "Agregar materia";
+  :Ingresa los datos de la materia;
+  
+  |Interfaz|
+  :Enviar datos de la materia;
+  
+  |Sistema|
+  :Validar datos de la materia;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Verificar existencia previa de la materia;
+    
+    if (§¿Materia es única?) then (Si)
+      :Registrar materia en la base de datos;
+      :Asociar materia a la carrera;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de\nconfirmación de éxito;
+        
+        |Administrador / Secretaría|
+        :Visualizar la materia registrada\ny asociada a la carrera;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar error: Materia duplicada;
+      
+      |Administrador / Secretaría|
+      :Corregir los datos ingresados;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Completar o corregir formulario;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nCarrera inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al módulo de carreras;
+  stop
+endif
+
+@enduml

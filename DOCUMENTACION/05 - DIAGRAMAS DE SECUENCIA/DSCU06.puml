@@ -1,0 +1,84 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "AdminConsultasUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "AdminController" as Ctrl
+    participant "AuthorizationService" as Auth
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Acceso al Módulo y Carga Inicial ==
+
+Actor -> UI: Acceder al módulo de administradores
+activate UI
+
+UI -> Ctrl: iniciarModuloConsultas()
+activate Ctrl
+
+== Verificación de Precondiciones ==
+
+Ctrl -> Auth: verificarPermisosUsuario()
+activate Auth
+return tienePermisosOk
+
+Ctrl -> DB: obtenerListadoGeneralAdministradores()
+activate DB
+
+alt Excepción 2: Error de consulta (Fallo de base de datos)
+    DB --> Ctrl: error: SQLException / ConnectionTimeout
+    Ctrl --> UI: error: No se pudo recuperar la información
+    UI --> Actor: Mostrar mensaje "Error de consulta, reintente más tarde"
+else Consulta física exitosa
+    return registrosAdministradores
+    
+    alt Excepción 1: No existen administradores (Lista vacía)
+        Ctrl --> UI: listaVacia
+        UI --> Actor: Mostrar listado vacío con mensaje "No hay administradores registrados"
+    else Registros encontrados (Flujo Normal Inicial)
+        Ctrl --> UI: listaAdministradores
+        deactivate Ctrl
+        UI --> Actor: Muestra el listado completo de administradores
+        deactivate UI
+    end
+end
+
+== Fase 2: Aplicación de Filtros de Búsqueda ==
+
+Actor -> UI: Ingresar criterios y aplicar filtros
+activate UI
+
+UI -> Ctrl: filtrarAdministradores(criterios)
+activate Ctrl
+
+Ctrl -> DB: buscarAdministradoresConFiltro(criterios)
+activate DB
+return resultadosFiltrados
+
+alt Excepción 1: No existen administradores (Sin coincidencias)
+    Ctrl --> UI: resultadosVacios
+    UI --> Actor: Mostrar mensaje "No se encontraron resultados para los filtros aplicados"
+else Coincidencias encontradas
+    Ctrl --> UI: listaFiltrada
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra los resultados de la búsqueda
+    deactivate UI
+end
+
+@enduml

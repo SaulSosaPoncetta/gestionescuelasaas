@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-38 - Consultar Finales Disponibles como Estudiante
+
+|Estudiante|
+start
+:Accede a la sección "Finales";
+
+|Interfaz|
+:Solicitar mesas de examen disponibles;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Identificar carrera activa del estudiante;
+  
+  if (§¿Posee carrera activa?) then (Si)
+    :Consultar materias del plan de estudios\ny situación académica del estudiante;
+    
+    if (§¿Posee materias en condición para rendir?) then (Si)
+      :Determinar mesas de examen disponibles\npara las materias habilitadas;
+      
+      if (§¿Existen mesas disponibles?) then (Si)
+        |Interfaz|
+        :Mostrar finales disponibles\npara inscripción / consulta;
+        
+        |Estudiante|
+        :Visualizar las mesas de examen\na las que puede acceder;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje: No existen mesas\nde examen disponibles en este momento;
+        
+        |Estudiante|
+        :Visualizar aviso sin mesas disponibles;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No posee materias\nen condición académica para rendir examen final;
+      
+      |Estudiante|
+      :Visualizar aviso de situación académica;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante sin carrera activa;
+    
+    |Estudiante|
+    :Contactar con administración;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

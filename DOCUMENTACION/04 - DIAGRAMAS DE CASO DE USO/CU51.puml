@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Docente" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-51: Docente Inicia Sesión" as CU51
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Docente Registrado y\nCredenciales de Acceso Válidas (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Pantalla de Inicio y Solicitar Credenciales" as Sec1
+    usecase "Ingresar Datos y Validar Credenciales" as Sec2
+    usecase "Identificar Rol, Autenticar y Permitir Acceso" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Docente Autenticado con Acceso a Funcionalidades de su Rol\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Credenciales Incorrectas / Usuario Inexistente" as Exc1
+    usecase "Exc 2: Usuario sin Permisos para Acceder" as Exc2
+    usecase "Exc 3: Error Durante la Autenticación" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU51
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU51 ..> Precond : <<include>>
+    CU51 ..> Sec1 : <<include>>
+    CU51 ..> Sec2 : <<include>>
+    CU51 ..> Sec3 : <<include>>
+    CU51 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+}
+@enduml

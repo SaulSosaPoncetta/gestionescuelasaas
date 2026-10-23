@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-30: Gestionar Ciclo Lectivo" as CU30
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Usuario Autenticado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Módulo y Consultar Ciclos" as Sec1
+    usecase "Ingresar Año y Crear/Modificar Ciclo" as Sec2
+    usecase "Validar Datos y Registrar Ciclo Lectivo" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Ciclo Lectivo Registrado o Actualizado\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Año Inválido" as Exc1
+    usecase "Exc 2: Ciclo Duplicado" as Exc2
+    usecase "Exc 3: Error de Persistencia" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU30
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU30 ..> Precond : <<include>>
+    CU30 ..> Sec1 : <<include>>
+    CU30 ..> Sec2 : <<include>>
+    CU30 ..> Sec3 : <<include>>
+    CU30 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+}
+@enduml

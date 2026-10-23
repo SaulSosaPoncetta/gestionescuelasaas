@@ -1,0 +1,98 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-49 - Actualizar Plan de Estudio
+
+|Administrador / Secretaría|
+start
+:Selecciona el plan de estudio;
+
+|Interfaz|
+:Solicitar datos del plan de estudio seleccionado;
+
+|Sistema|
+:Verificar permisos administrativos del usuario;
+
+if (§¿Usuario posee permisos?) then (Si)
+  :Buscar plan de estudio en la base de datos;
+  
+  if (§¿Plan de estudio existe?) then (Si)
+    |Interfaz|
+    :Mostrar formulario con datos del plan\ny opción de reemplazo de documentación;
+    
+    |Administrador / Secretaría|
+    :Modifica los datos del plan\ny (opcionalmente) adjunta un nuevo archivo;
+    :Confirma la actualización;
+    
+    |Interfaz|
+    :Enviar datos modificados y archivo (si aplica);
+    
+    |Sistema|
+    :Validar la integridad de los datos ingresados;
+    
+    if (§¿Datos son válidos?) then (Si)
+      if (§¿Se adjuntó nueva documentación?) then (Si)
+        :Validar formato y tamaño del nuevo archivo;
+        
+        if (§¿Archivo es válido?) then (Si)
+          :Reemplazar archivo anterior\nen el servidor/repositorio;
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nArchivo de documentación inválido;
+          
+          |Administrador / Secretaría|
+          :Seleccionar un archivo válido;
+          stop
+        endif
+      else (No)
+      endif
+
+      |Sistema|
+      :Actualizar datos del plan de estudio en BD;
+      
+      if (§¿Actualización exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde actualización exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar el plan de estudio actualizado;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de actualización en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nDatos del plan inválidos;
+      
+      |Administrador / Secretaría|
+      :Corregir los datos del formulario;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nPlan de estudio inexistente;
+    
+    |Administrador / Secretaría|
+    :Regresar al listado de planes de estudio;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nUsuario sin permisos para esta operación;
+  
+  |Administrador / Secretaría|
+  :Visualizar aviso de acceso denegado;
+  stop
+endif
+
+@enduml

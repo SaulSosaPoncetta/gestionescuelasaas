@@ -1,0 +1,114 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "EstudianteRegistroUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "EstudianteController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Despliegue del Formulario ==
+
+Actor -> UI: Seleccionar "Agregar estudiante"
+activate UI
+
+UI -> Ctrl: prepararFormularioAlta()
+activate Ctrl
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl --> UI: mostrarFormularioVacio()
+deactivate Ctrl
+UI --> Actor: El sistema muestra el formulario de alta
+deactivate UI
+
+== Fase 2: Ingreso de Datos y Persistencia Transaccional ==
+
+Actor -> UI: Ingresar datos personales, documentales y de contacto, y confirmar
+activate UI
+
+alt Excepción 2: Datos obligatorios incompletos
+    UI --> Actor: Mostrar advertencia "Por favor, complete todos los campos obligatorios"
+else Formulario completo
+    UI -> Ctrl: registrarEstudiante(datosPersonales, datosContactoDocumental)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosPersonales, datosContactoDocumental)
+    
+    alt Excepción 3: Información inválida (Formato de e-mail, fecha de nacimiento errónea, etc.)
+        Ctrl --> UI: error: Datos inválidos
+        UI --> Actor: Mostrar campos con error para su corrección
+    else Formatos correctos
+        
+        == Inicio de Transacción Atómica ==
+        Ctrl -> DB: iniciarTransaccion()
+        activate DB
+        deactivate DB
+        
+        Ctrl -> DB: verificarDniExistente(datosPersonales.dni)
+        activate DB
+        return dniExiste
+        
+        alt Excepción 1: DNI duplicado
+            Ctrl -> DB: rollback()
+            activate DB
+            deactivate DB
+            Ctrl --> UI: error: DNI ya registrado
+            UI --> Actor: Mostrar mensaje "El DNI ingresado ya pertenece a un estudiante registrado"
+            
+        else DNI único
+            
+            Ctrl -> DB: crearUsuarioEstudiante(datosPersonales.dni, email)
+            activate DB
+            return usuarioId
+            
+            Ctrl -> DB: asignarRol(usuarioId, "ESTUDIANTE")
+            activate DB
+            deactivate DB
+            
+            Ctrl -> DB: guardarFichaEstudiante(usuarioId, datosPersonales, datosContactoDocumental)
+            activate DB
+            
+            alt Excepción 4: Error de persistencia (Fallo en la transacción física)
+                DB --> Ctrl: error: SQLException / TransactionException
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: No se pudo completar el registro
+                UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente de nuevo"
+            else Escritura exitosa
+                return confirmacionOK
+                
+                Ctrl -> DB: commitTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl --> UI: registroEstudianteExitoso
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación: "El estudiante queda registrado"
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

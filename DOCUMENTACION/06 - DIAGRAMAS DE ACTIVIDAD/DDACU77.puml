@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-77 - Estudiante Consulta Datos Personales
+
+|Estudiante|
+start
+:Selecciona la opción "Mi Perfil / Datos Personales";
+
+|Interfaz|
+:Solicitar información de perfil del estudiante;
+
+|Sistema|
+:Verificar si el usuario posee rol de Alumno;
+
+if (§¿Posee rol Alumno?) then (Si)
+  :Consultar datos personales del alumno en la base de datos;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen datos personales registrados?) then (Si)
+      :Recuperar DNI, nombre, e-mail, teléfono y domicilio;
+
+      |Interfaz|
+      :Mostrar los datos del perfil del estudiante;
+
+      |Estudiante|
+      :Visualizar su información personal;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de advertencia:\nSin datos encontrados en el perfil;
+
+      |Estudiante|
+      :Visualizar pantalla de perfil sin datos;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nError al obtener los datos de la BD;
+
+    |Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nUsuario no posee el rol estudiante;
+
+  |Estudiante|
+  :Visualizar restricción de acceso;
+  stop
+endif
+
+@enduml

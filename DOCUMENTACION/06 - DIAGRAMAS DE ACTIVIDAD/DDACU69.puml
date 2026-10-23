@@ -1,0 +1,78 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-69 - Estudiante se Matricula en una Materia
+
+|Estudiante|
+start
+:Selecciona una materia del catálogo;
+
+|Interfaz|
+:Solicitar confirmación de matriculación;
+
+|Estudiante|
+:Confirmar solicitud de matriculación;
+
+|Interfaz|
+:Enviar datos de matriculación;
+
+|Sistema|
+:Verificar disponibilidad y cupo de la materia;
+
+if (§¿Materia disponible y con cupo?) then (Si)
+  :Verificar matriculación previa;
+
+  if (§¿Estudiante ya matriculado?) then (No)
+    :Validar correlatividades y requisitos académicos;
+
+    if (§¿Cumple requisitos y correlatividades?) then (Si)
+      :Registrar matriculación en la base de datos;
+
+      if (§¿Registro exitoso?) then (Si)
+        :Generar comprobante de matriculación;
+
+        |Interfaz|
+        :Mostrar mensaje de éxito y comprobante;
+
+        |Estudiante|
+        :Visualizar confirmación de matriculación;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError al registrar la matriculación en BD;
+
+        |Estudiante|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nNo cumple condiciones/correlatividades requeridas;
+
+      |Estudiante|
+      :Visualizar mensaje de rechazo;
+      stop
+    endif
+
+  else (Si)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEstudiante ya matriculado previamente;
+
+    |Estudiante|
+    :Visualizar mensaje de advertencia;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria no disponible o sin cupo;
+
+  |Estudiante|
+  :Visualizar mensaje de aviso;
+  stop
+endif
+
+@enduml

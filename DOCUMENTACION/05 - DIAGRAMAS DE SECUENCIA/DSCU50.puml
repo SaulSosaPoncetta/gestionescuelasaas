@@ -1,0 +1,92 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría / Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "InformacionAcademicaUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "InformacionAcademicaController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso al Módulo Académico ==
+
+Actor -> UI: Seleccionar el módulo académico correspondiente
+activate UI
+
+UI -> Ctrl: consultarInformacionAcademica()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Excepción 2: Usuario sin autorización
+
+    Ctrl --> UI: error: Usuario sin autorización
+    UI --> Actor: Mostrar mensaje "Usuario sin autorización"
+
+else Usuario autorizado
+
+    == Fase 2: Identificación del Contexto ==
+
+    Ctrl -> Ctrl: identificarContexto()
+
+    == Fase 3: Recuperación de Información ==
+
+    Ctrl -> DB: recuperarInformacionAcademica()
+    activate DB
+
+    alt Excepción 1: Información inexistente
+
+        DB --> Ctrl: información inexistente
+        Ctrl --> UI: error: Información inexistente
+        UI --> Actor: Mostrar mensaje "No existe información académica disponible"
+
+    else Excepción 3: Error de consulta
+
+        DB --> Ctrl: error: Error de consulta
+        Ctrl --> UI: error: No se pudo realizar la consulta
+        UI --> Actor: Mostrar mensaje "Error al consultar la información académica"
+
+    else Información disponible
+
+        return informacionAcademica
+
+        == Fase 4: Aplicación de Relaciones Académicas ==
+
+        Ctrl -> Ctrl: aplicarRelacionesAcademicas(informacionAcademica)
+
+        == Fase 5: Mostrar Resultados ==
+
+        Ctrl --> UI: mostrarResultados(informacionAcademica)
+        deactivate Ctrl
+
+        UI --> Actor: Mostrar información académica
+        deactivate UI
+
+    end
+end
+
+@enduml

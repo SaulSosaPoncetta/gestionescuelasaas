@@ -1,0 +1,127 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "AdminRegistroUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "AdminController" as Ctrl
+    participant "AuthorizationService" as Auth
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Solicitud y Despliegue del Formulario ==
+
+Actor -> UI: Seleccionar "Agregar administrador"
+activate UI
+
+UI -> Ctrl: inicializarFormularioRegistro()
+activate Ctrl
+
+Ctrl -> Auth: verificarPermisosAdministrativos()
+activate Auth
+return tienePermisosOk
+
+Ctrl --> UI: mostrarFormularioVacio()
+deactivate Ctrl
+UI --> Actor: El sistema muestra el formulario de alta
+deactivate UI
+
+== Fase 2: Ingreso de Datos y Transacción de Registro ==
+
+Actor -> UI: Ingresar datos personales y de acceso, y confirmar
+activate UI
+
+alt Excepción 3: Datos obligatorios incompletos
+    UI --> Actor: Mostrar advertencia "Por favor, complete todos los campos marcados como obligatorios"
+else Formulario completo
+    UI -> Ctrl: registrarAdministrador(datosPersonales, datosAcceso)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosPersonales, datosAcceso)
+    
+    alt Excepción 4: Datos inválidos (Formato de DNI erróneo, email mal formado, etc.)
+        Ctrl --> UI: error: Formatos inválidos
+        UI --> Actor: Mostrar campos con error y solicitar corrección
+    else Formatos correctos
+        
+        == Inicio de Transacción Atómica ==
+        Ctrl -> DB: iniciarTransaccion()
+        activate DB
+        deactivate DB
+        
+        Ctrl -> DB: verificarDniExistente(datosPersonales.dni)
+        activate DB
+        return dniExiste
+        
+        alt Excepción 1: DNI duplicado
+            Ctrl -> DB: rollback()
+            activate DB
+            deactivate DB
+            Ctrl --> UI: error: DNI ya registrado
+            UI --> Actor: Mostrar mensaje "El DNI ingresado ya pertenece a un usuario del sistema"
+            
+        else DNI único
+            Ctrl -> DB: verificarUsuarioExistente(datosAcceso.username)
+            activate DB
+            return usuarioExiste
+            
+            alt Excepción 2: Usuario duplicado
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: Nombre de usuario ocupado
+                UI --> Actor: Mostrar mensaje "El nombre de usuario ya se encuentra en uso"
+                
+            else Nombre de usuario libre
+                
+                Ctrl -> DB: insertarUsuario(datosAcceso)
+                activate DB
+                return usuarioId
+                
+                Ctrl -> DB: asignarRolAUsuario(usuarioId, "ADMINISTRADOR")
+                activate DB
+                deactivate DB
+                
+                Ctrl -> DB: insertarDatosAdministrador(usuarioId, datosPersonales)
+                activate DB
+                
+                alt Excepción 5: Error durante la transacción (Fallo físico / Restricción)
+                    DB --> Ctrl: error: TransactionException / SQLException
+                    Ctrl -> DB: rollback()
+                    activate DB
+                    deactivate DB
+                    Ctrl --> UI: error: No se pudo completar el registro
+                    UI --> Actor: Mostrar mensaje "Error interno al procesar el alta, intente nuevamente"
+                else Escritura exitosa
+                    return confirmaciónOK
+                    
+                    Ctrl -> DB: commitTransaccion()
+                    activate DB
+                    deactivate DB
+                    
+                    Ctrl --> UI: registroExitosoConfirmado
+                    deactivate Ctrl
+                    UI --> Actor: El sistema confirma la operación: "Nuevo administrador registrado"
+                    deactivate UI
+                end
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaMateria" as Vista
+control "MateriaController" as Ctrl
+entity "MateriaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-54: Docente Consulta Perfil de una Materia
+
+Docente -> Vista : Seleccionar materia(idMateria)
+activate Vista
+Vista -> Ctrl : verPerfilMateria(idMateria)
+activate Ctrl
+
+Ctrl -> Service : obtenerPerfilMateriaDocente(idMateria, idDocente)
+activate Service
+Service -> BD : buscarMateriaPorId(idMateria)
+activate BD
+BD --> Service : ObjetoMateria / null
+deactivate BD
+
+alt Excepción 1: Materia inexistente
+    Service --> Ctrl : Error("Materia no encontrada")
+    Ctrl --> Vista : Mostrar mensaje ("Materia no existe")
+    Vista --> Docente : Informar materia inexistente
+else Excepción 2: Materia no asociada al docente
+    Service -> Service : verificarAsociacion(idMateria, idDocente)
+    Service --> Ctrl : Error("Materia no asignada a este docente")
+    Ctrl --> Vista : Mostrar mensaje de restricción
+    Vista --> Docente : Informar falta de asociación
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Fallo en base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar error de sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : DatosMateria
+    deactivate Service
+    Ctrl --> Vista : MostrarPerfilMateria(DatosMateria)
+    deactivate Ctrl
+    Vista --> Docente : Presentar información de la materia
+    deactivate Vista
+end
+
+@enduml

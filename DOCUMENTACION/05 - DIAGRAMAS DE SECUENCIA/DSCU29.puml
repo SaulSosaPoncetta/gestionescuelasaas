@@ -1,0 +1,88 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "GestionCursadaUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "CursadaController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Seleccionar una materia del listado
+activate UI
+
+Actor -> UI: Seleccionar al estudiante (previamente reprobado)
+
+Actor -> UI: Solicitar botón "Restaurar Situación"
+
+UI -> Ctrl: restaurarSituacionEstudiante(materiaId, estudianteId)
+activate Ctrl
+
+== Verificación de Materia (Precondición) ==
+Ctrl -> DB: verificarMateriaExiste(materiaId)
+activate DB
+
+alt Excepción 2: Materia inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Materia no válida
+    UI --> Actor: Mostrar mensaje "Error: La materia seleccionada no existe en el sistema"
+else Materia válida
+    return materiaExiste
+    
+    == Verificación de Estudiante y Asociación (Precondición) ==
+    Ctrl -> DB: buscarEstudianteEnMateria(materiaId, estudianteId)
+    activate DB
+    
+    alt Excepción 1: Estudiante inexistente (o no asociado)
+        DB --> Ctrl: registroNoEncontrado
+        Ctrl --> UI: error: Estudiante no asociado o inexistente
+        UI --> Actor: Mostrar mensaje "Error: El estudiante seleccionado no registra cursada en esta materia"
+    else Estudiante asociado encontrado
+        return registroCursada
+        
+        == Verificación de Situación Modificable (Precondición 2) ==
+        Ctrl -> Ctrl: verificarEstadoModificable(registroCursada.estado)
+        
+        alt Estado no es modificable (ej. ya está regularizado o activo)
+            Ctrl --> UI: error: Estado actual no requiere restauración
+            UI --> Actor: Mostrar mensaje "La situación del estudiante no se encuentra en estado Reprobado"
+        else Estado modificable válido ("REPROBADO")
+            
+            == Restauración Automatizada de la Situación ==
+            Ctrl -> DB: restaurarEstadoOriginalCursada(materiaId, estudianteId)
+            activate DB
+            
+            alt Excepción 3: Error de actualización
+                DB --> Ctrl: error: SQLException / ConnectionTimeout
+                Ctrl --> UI: error: No se pudo revertir el estado
+                UI --> Actor: Mostrar mensaje "Error interno al actualizar la situación académica, intente de nuevo"
+            else Transacción exitosa (Flujo Normal)
+                return confirmacionOK
+                
+                Ctrl --> UI: restauracionExitosaConfirmed
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación: "El estudiante vuelve a la situación de cursada correspondiente"
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

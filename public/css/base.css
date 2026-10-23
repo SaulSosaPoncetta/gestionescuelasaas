@@ -1,0 +1,67 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+:root {
+    --sidebar-width: 260px;
+    --card-radius: 18px;
+    --gap: 16px;
+    --footer-height: 50px;
+}
+
+body {
+    display: flex;
+    background: #efefef;
+}
+
+/* MAIN
+   - margin-left igual al sidebar
+   - El max-width evita que en 2K el contenido se estire a lo ancho de toda la pantalla
+   - Se centra con margin: 0 auto dentro del espacio disponible
+*/
+.main {
+    margin-left: var(--sidebar-width);
+    padding: 24px;
+    width: calc(100% - var(--sidebar-width));
+
+    /* CLAVE para 2K: limita el ancho del contenido central */
+    box-sizing: border-box;
+
+}
+
+/* Wrapper interno para centrar y limitar el grid en pantallas grandes */
+.main-inner {
+    max-width: 960px;   /* el grid no crece más allá de esto */
+    margin: 0 auto;     /* se centra en el espacio disponible */
+}
+
+@media (max-width: 768px) {
+        .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        z-index: 100;
+    }
+
+    .overlay.active {
+        display: block;
+    }
+
+     #menu-btn {
+        display: block;
+        font-size: 26px;
+        cursor: pointer;
+    }
+
+    .main {
+        margin-left: 0;
+        width: 100%;
+    }
+}

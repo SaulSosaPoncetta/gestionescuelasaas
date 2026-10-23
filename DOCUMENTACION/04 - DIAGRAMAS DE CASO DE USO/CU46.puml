@@ -1,0 +1,40 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actor (Abierto a cualquier rol según plantilla)
+actor "Usuario" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-46: Consultar Comprobantes" as CU46
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Usuario Autenticado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Comprobantes" as Sec1
+    usecase "Recuperar y Mostrar Información Disponible" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Comprobantes Disponibles para Consulta\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Existen Comprobantes" as Exc1
+    usecase "Exc 2: Error de Consulta" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU46
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU46 ..> Precond : <<include>>
+    CU46 ..> Sec1 : <<include>>
+    CU46 ..> Sec2 : <<include>>
+    CU46 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones)
+    Exc1 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-50 - Consultar Información Académica
+
+|Actor|
+start
+:Selecciona el módulo académico correspondiente;
+
+|Interfaz|
+:Solicitar consulta de información académica;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Verificar autorización y rol del usuario;
+
+  if (§¿Usuario autorizado?) then (Si)
+    :Identificar contexto de la consulta;
+    :Recuperar información académica desde la base de datos;
+
+    if (§¿Consulta exitosa?) then (Si)
+      if (§¿Información existe?) then (Si)
+        :Aplicar relaciones académicas correspondientes;
+
+        |Interfaz|
+        :Mostrar los resultados de la información académica;
+
+        |Actor|
+        :Visualizar la información académica solicitada;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de advertencia:\nInformación inexistente;
+
+        |Actor|
+        :Visualizar mensaje de información no encontrada;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError durante la consulta en BD;
+
+      |Actor|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nUsuario sin autorización;
+
+    |Actor|
+    :Visualizar mensaje de restricción de acceso;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a pantalla de Login;
+
+  |Actor|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

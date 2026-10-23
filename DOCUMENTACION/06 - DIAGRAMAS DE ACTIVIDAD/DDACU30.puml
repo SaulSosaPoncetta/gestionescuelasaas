@@ -1,0 +1,111 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-30 - Gestionar Ciclo Lectivo
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de ciclos lectivos;
+
+|Interfaz|
+:Solicitar listado de ciclos lectivos;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Recuperar ciclos lectivos existentes;
+  
+  |Interfaz|
+  :Mostrar ciclos lectivos\ny opciones (Crear / Modificar);
+  
+  |Administrador / Secretaría|
+  if (§¿Qué acción desea realizar?) then (Crear Nuevo Ciclo)
+    :Selecciona "Crear nuevo ciclo";
+    :Ingresa el año del ciclo lectivo;
+    
+    |Interfaz|
+    :Enviar datos del nuevo ciclo lectivo;
+    
+    |Sistema|
+    :Validar formato del año ingresado;
+    
+    if (§¿Año válido?) then (Si)
+      :Verificar si el ciclo ya existe;
+      
+      if (§¿Ciclo lectivo es único?) then (Si)
+        :Registrar nuevo ciclo lectivo;
+        
+        if (§¿Persistencia exitosa?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de confirmación\nde registro exitoso;
+          
+          |Administrador / Secretaría|
+          :Visualizar el nuevo ciclo\nlectivo en el listado;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nError de persistencia en BD;
+          
+          |Administrador / Secretaría|
+          :Reintentar o cancelar;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nCiclo lectivo duplicado;
+        
+        |Administrador / Secretaría|
+        :Corregir el año ingresado;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nAño ingresado inválido;
+      
+      |Administrador / Secretaría|
+      :Corregir el valor ingresado;
+      stop
+    endif
+
+  else (Modificar / Consultar Exisitente)
+    |Administrador / Secretaría|
+    :Selecciona un ciclo lectivo existente\ny modifica sus datos;
+    
+    |Interfaz|
+    :Enviar datos modificados;
+    
+    |Sistema|
+    :Validar y actualizar el ciclo lectivo;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de confirmación\nde actualización exitosa;
+      
+      |Administrador / Secretaría|
+      :Visualizar el ciclo lectivo actualizado;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError de actualización en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

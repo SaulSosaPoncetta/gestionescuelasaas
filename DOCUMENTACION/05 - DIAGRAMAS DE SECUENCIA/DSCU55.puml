@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaMateria" as Vista
+control "CursadaDocController" as Ctrl
+entity "InscripcionService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-55: Docente Consulta Alumnos de una Materia
+
+Docente -> Vista : Seleccionar materia y solicitar alumnos(idMateria)
+activate Vista
+Vista -> Ctrl : listarAlumnosMateria(idMateria)
+activate Ctrl
+
+Ctrl -> Service : obtenerAlumnosPorMateria(idMateria)
+activate Service
+Service -> BD : buscarAlumnosInscriptos(idMateria)
+activate BD
+BD --> Service : ListaAlumnos / ListaVacía / null
+deactivate BD
+
+alt Excepción 1: Materia inexistente
+    Service --> Ctrl : Error("Materia no encontrada")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar materia inexistente
+else Excepción 2: No existen alumnos asociados
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("Sin alumnos inscriptos")
+    Vista --> Docente : Mostrar lista vacía
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Error en base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar falla del sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaAlumnos
+    deactivate Service
+    Ctrl --> Vista : MostrarListadoAlumnos(ListaAlumnos)
+    deactivate Ctrl
+    Vista --> Docente : Mostrar listado de alumnos
+    deactivate Vista
+end
+
+@enduml

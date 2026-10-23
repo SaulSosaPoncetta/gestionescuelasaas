@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Docente" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-60: Docente Consulta Historial de Finales" as CU60
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Docente Autenticado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder al Historial de Finales e Identificar Docente" as Sec1
+    usecase "Consultar y Recuperar Registros Históricos" as Sec2
+    usecase "Mostrar Historial en Pantalla" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Historial de Finales Disponible para Consulta\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Existen Registros Históricos" as Exc1
+    usecase "Exc 2: Error Durante la Consulta" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU60
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU60 ..> Precond : <<include>>
+    CU60 ..> Sec1 : <<include>>
+    CU60 ..> Sec2 : <<include>>
+    CU60 ..> Sec3 : <<include>>
+    CU60 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

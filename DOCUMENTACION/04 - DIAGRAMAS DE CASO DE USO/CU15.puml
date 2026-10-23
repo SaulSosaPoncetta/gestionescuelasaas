@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-15: Registrar Estudiante" as CU15
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Autenticación y Disponibilidad de Información\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Solicitar Alta y Mostrar Formulario" as Sec1
+    usecase "Ingresar Datos Personales, Documentales y de Contacto" as Sec2
+    usecase "Validar Información, Crear Usuario y Asignar Rol" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Estudiante Registrado en el Sistema\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2: Datos Obligatorios Incompletos" as Exc2
+    usecase "Exc 1: DNI Duplicado" as Exc1
+    usecase "Exc 3: Información Inválida" as Exc3
+    usecase "Exc 4: Error de Persistencia" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU15
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU15 ..> Precond : <<include>>
+    CU15 ..> Sec1 : <<include>>
+    CU15 ..> Sec2 : <<include>>
+    CU15 ..> Sec3 : <<include>>
+    CU15 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec2 : <<extend>>
+    Exc1 ..> Sec3 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+}
+@enduml

@@ -1,0 +1,100 @@
+/* ── CONTENEDOR CENTRADO ─────────────────────────────────────────────── */
+.comprobante-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-top: clamp(30px, 8vh, 90px);
+}
+
+/* ── RECUADRO DEL COMPROBANTE ────────────────────────────────────────── */
+.comprobante-box {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    padding: 32px 36px;
+    border: 1.5px solid #333;
+    border-radius: 4px;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Marca de agua institucional, de fondo, para dificultar falsificaciones
+   caseras (fotocopia/captura sin el logo). TODO-BACK: si más adelante
+   se genera un código de verificación real, sumar acá un <img> de QR
+   apuntando a esa URL, además de esta marca de agua. */
+.comprobante-box::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('/img/logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 220px;
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+.comprobante-titulo {
+    position: relative;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 24px;
+}
+
+.comprobante-numero {
+    font-weight: 700;
+}
+
+.comprobante-datos {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 15px;
+    color: #222;
+    line-height: 1.5;
+}
+
+.comprobante-datos p {
+    margin: 0;
+}
+
+.comprobante-verificacion {
+    position: relative;
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px dashed #999;
+    font-size: 11px;
+    color: #777;
+    letter-spacing: 0.5px;
+}
+
+.comprobante-verificacion span {
+    font-family: monospace;
+    font-weight: 600;
+    color: #555;
+}
+
+/* ── IMPRESIÓN: solo se imprime el recuadro ──────────────────────────── */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #comprobante-imprimible,
+    #comprobante-imprimible * {
+        visibility: visible;
+    }
+
+    #comprobante-imprimible {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        border-color: #000;
+        box-shadow: none;
+    }
+}

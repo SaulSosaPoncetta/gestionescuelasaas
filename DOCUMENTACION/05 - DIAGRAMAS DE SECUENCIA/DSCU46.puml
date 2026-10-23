@@ -1,0 +1,78 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario" as Actor
+
+box "Capa de Presentación" 
+    participant "ComprobantesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "ComprobantesController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso a Comprobantes ==
+
+Actor -> UI: Acceder a comprobantes
+activate UI
+
+UI -> Ctrl: consultarComprobantes()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Recuperación de Información ==
+
+    Ctrl -> DB: consultarComprobantes()
+    activate DB
+
+    alt Excepción 1: No existen comprobantes
+
+        DB --> Ctrl: no existen comprobantes
+        Ctrl --> UI: error: No existen comprobantes
+        UI --> Actor: Mostrar mensaje "No existen comprobantes disponibles"
+
+    else Existen comprobantes
+
+        return comprobantes
+
+        == Fase 3: Visualización de Comprobantes ==
+
+        Ctrl --> UI: mostrarComprobantes(comprobantes)
+        deactivate Ctrl
+
+        UI --> Actor: Mostrar los comprobantes disponibles
+        deactivate UI
+
+    end
+end
+
+@enduml

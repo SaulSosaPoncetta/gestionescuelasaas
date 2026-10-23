@@ -1,0 +1,69 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "EstudianteGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "EstudianteController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Seleccionar un estudiante del listado
+activate UI
+
+Actor -> UI: Solicitar cambiar su estado (Activar / Desactivar)
+
+UI -> Ctrl: cambiarEstadoEstudiante(estudianteId)
+activate Ctrl
+
+== Verificación de Registro (Precondición) ==
+
+Ctrl -> DB: verificarExistenciaYEstado(estudianteId)
+activate DB
+
+alt Excepción 1: Estudiante inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Estudiante no existe
+    UI --> Actor: Mostrar mensaje "El estudiante seleccionado no existe en el sistema"
+else Estudiante registrado con éxito
+    return registroActual
+    
+    == Procesamiento y Actualización del Estado ==
+    
+    Ctrl -> Ctrl: alternarEstado(registroActual.estado)
+    
+    Ctrl -> DB: actualizarEstadoEstudiante(estudianteId, nuevoEstado)
+    activate DB
+    
+    alt Excepción 2: Error de actualización
+        DB --> Ctrl: error: Fallo en persistencia / Conexión
+        Ctrl --> UI: error: No se pudo modificar el estado
+        UI --> Actor: Mostrar mensaje "Error interno al actualizar el estado, intente de nuevo"
+    else Transacción exitosa
+        return confirmacionOK
+        
+        Ctrl --> UI: cambioEstadoExitoso(nuevoEstado)
+        deactivate Ctrl
+        UI --> Actor: El sistema confirma la operación: "Estado actualizado"
+        deactivate UI
+    end
+end
+
+@enduml

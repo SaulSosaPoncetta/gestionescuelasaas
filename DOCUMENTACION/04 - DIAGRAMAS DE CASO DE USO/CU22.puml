@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría / Estudiante" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-22: Consultar Espacios Curriculares" as CU22
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Existencia de la Carrera\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Carrera y Solicitar Espacios" as Sec1
+    usecase "Aplicar Filtros de Búsqueda" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Espacios Curriculares Disponibles\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2: Carrera Inexistente" as Exc2
+    usecase "Exc 3: Error de Consulta" as Exc3
+    usecase "Exc 1: Carrera sin Materias" as Exc1
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU22
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU22 ..> Precond : <<include>>
+    CU22 ..> Sec1 : <<include>>
+    CU22 ..> Sec2 : <<include>>
+    CU22 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec2 : <<extend>>
+}
+@enduml

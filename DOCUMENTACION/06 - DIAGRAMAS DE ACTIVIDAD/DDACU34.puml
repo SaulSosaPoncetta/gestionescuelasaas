@@ -1,0 +1,81 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-34 - Agregar Estudiante a Mesa de Examen
+
+|Administrador / Secretaría|
+start
+:Selecciona la mesa de examen;
+:Solicita agregar estudiantes;
+
+|Interfaz|
+:Enviar solicitud de incorporación\npara la mesa seleccionada;
+
+|Sistema|
+:Buscar mesa de examen en la base de datos;
+
+if (§¿Mesa de examen existe?) then (Si)
+  :Obtener estudiantes disponibles\n(registrados y pertenecientes a la materia);
+  
+  if (§¿Existen estudiantes disponibles?) then (Si)
+    |Interfaz|
+    :Mostrar lista de estudiantes elegibles;
+    
+    |Administrador / Secretaría|
+    :Selecciona uno o varios estudiantes\ny confirma la operación;
+    
+    |Interfaz|
+    :Enviar estudiantes seleccionados;
+    
+    |Sistema|
+    :Verificar pertenencia a la materia\ny que no estén ya inscriptos;
+    
+    if (§¿Corresponden a la materia\ny sin inscripción previa?) then (Si)
+      :Registrar las inscripciones\nen la mesa de examen;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde incorporación exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar los estudiantes\nincomporados a la mesa;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nEstudiante ya inscripto o\nno pertenece a la materia;
+      
+      |Administrador / Secretaría|
+      :Revisar la lista de seleccionados;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje: No existen\nestudiantes disponibles para agregar;
+    
+    |Administrador / Secretaría|
+    :Visualizar aviso sin registros;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMesa de examen inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de mesas;
+  stop
+endif
+
+@enduml

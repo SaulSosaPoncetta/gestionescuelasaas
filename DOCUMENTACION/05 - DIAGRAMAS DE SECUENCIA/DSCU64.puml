@@ -1,0 +1,73 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaEditarPerfil" as Vista
+control "PerfilController" as Ctrl
+entity "DocenteService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-64: Docente Actualiza su Perfil
+
+Docente -> Vista : Acceder a edición de perfil
+activate Vista
+Vista -> Ctrl : obtenerDatosPerfil()
+activate Ctrl
+Ctrl --> Vista : Mostrar datos editables
+deactivate Ctrl
+
+Docente -> Vista : Modificar datos y confirmar cambios
+Vista -> Ctrl : actualizarPerfil(datosNuevos)
+activate Ctrl
+
+Ctrl -> Ctrl : validarCamposObligatorios(datosNuevos)
+
+alt Excepción 2: Campos obligatorios incompletos
+    Ctrl --> Vista : Mostrar error ("Complete los campos requeridos")
+    Vista --> Docente : Solicitar rellenar campos vacíos
+else Campos Completos
+    Ctrl -> Service : guardarPerfilDocente(idDocente, datosNuevos)
+    activate Service
+    
+    Service -> BD : verificarPerfilExistente(idDocente)
+    activate BD
+    BD --> Service : PerfilExiste / null
+    deactivate BD
+
+    alt Excepción 3: Perfil inexistente
+        Service --> Ctrl : Error("Perfil no encontrado")
+        Ctrl --> Vista : Mostrar error
+        Vista --> Docente : Informar perfil inexistente
+    else Perfil Válido
+        Service -> Service : validarFormatoDatos(datosNuevos)
+        
+        alt Excepción 1: Datos inválidos
+            Service --> Ctrl : Error("Formato de datos no permitido")
+            Ctrl --> Vista : Mostrar mensaje de validación
+            Vista --> Docente : Informar datos inválidos
+        else Datos Válidos
+            Service -> BD : actualizarPerfilBD(idDocente, datosNuevos)
+            activate BD
+            
+            alt Excepción 4: Error durante la actualización
+                BD --> Service : ErrorPersistencia
+                Service --> Ctrl : Error("Error al guardar en base de datos")
+                Ctrl --> Vista : Mostrar error del sistema
+                Vista --> Docente : Informar fallo de actualización
+            else Actualización Exitosa (Secuencia Normal)
+                BD --> Service : Confirmación
+                deactivate BD
+                Service --> Ctrl : PerfilActualizado
+                deactivate Service
+                Ctrl --> Vista : InformarResultado("Perfil actualizado correctamente")
+                deactivate Ctrl
+                Vista --> Docente : Mostrar mensaje de éxito
+                deactivate Vista
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-37: Consultar Historial de Finales" as CU37
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Usuario Autenticado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder al Historial y Recuperar Mesas" as Sec1
+    usecase "Aplicar Filtros y Procesar Búsqueda" as Sec2
+    usecase "Consultar Detalle de Mesa Histórica" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Información Histórica Disponible\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Existen Registros" as Exc1
+    usecase "Exc 3: Error de Consulta" as Exc3
+    usecase "Exc 2: No Hay Coincidencias" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU37
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU37 ..> Precond : <<include>>
+    CU37 ..> Sec1 : <<include>>
+    CU37 ..> Sec2 : <<include>>
+    CU37 ..> Sec3 : <<include>>
+    CU37 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

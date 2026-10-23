@@ -1,0 +1,139 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "MesaExamenUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "MesaExamenController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Mesa ==
+
+Actor -> UI: Seleccionar mesa de examen
+activate UI
+
+UI -> Ctrl: consultarMesa(idMesa)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> DB: consultarMesa(idMesa)
+    activate DB
+    return mesa
+
+    alt Excepción 3: Mesa inexistente
+
+        Ctrl --> UI: error: La mesa no existe
+        UI --> Actor: Mostrar mensaje "La mesa de examen seleccionada no existe"
+
+    else Mesa existente
+
+        == Fase 2: Acceso a la carga de notas ==
+
+        Actor -> UI: Acceder a la carga de notas
+
+        UI -> Ctrl: obtenerEstudiantesInscritos(idMesa)
+        activate Ctrl
+
+        Ctrl -> DB: consultarEstudiantesInscritos(idMesa)
+        activate DB
+        return listaEstudiantes
+
+        Ctrl --> UI: mostrarEstudiantes(listaEstudiantes)
+        UI --> Actor: Mostrar estudiantes inscriptos
+
+        == Fase 3: Carga y validación de notas ==
+
+        Actor -> UI: Ingresar notas
+
+        UI -> Ctrl: cargarNotas(datos)
+        
+        Ctrl -> Ctrl: validarNotas(datos)
+
+        alt Excepción 1: Nota inválida
+
+            Ctrl --> UI: error: Nota inválida
+            UI --> Actor: Mostrar mensaje "La nota ingresada no es válida"
+
+        else Nota válida
+
+            alt Excepción 2: Estudiante no inscripto
+
+                Ctrl --> UI: error: Estudiante no inscripto
+                UI --> Actor: Mostrar mensaje "El estudiante no se encuentra inscripto en la mesa"
+
+            else Estudiante inscripto
+
+                alt Excepción 4: Datos incompletos
+
+                    Ctrl --> UI: error: Datos incompletos
+                    UI --> Actor: Mostrar mensaje "Complete todos los datos requeridos"
+
+                else Datos completos
+
+                    == Fase 4: Registro de Calificaciones ==
+
+                    Ctrl -> DB: guardarCalificaciones(datos)
+                    activate DB
+
+                    alt Excepción 5: Error de persistencia
+
+                        DB --> Ctrl: error: Error de persistencia
+                        Ctrl --> UI: error: No se pudieron guardar las calificaciones
+                        UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente nuevamente"
+
+                    else Calificaciones guardadas
+
+                        return calificacionesGuardadas
+
+                        Ctrl -> DB: actualizarSituacionAcademica(datos)
+                        activate DB
+                        return situacionAcademicaActualizada
+
+                        Ctrl --> UI: confirmarOperacion
+                        deactivate Ctrl
+
+                        UI --> Actor: El sistema confirma la operación: "Las notas finales fueron registradas correctamente"
+                        deactivate UI
+
+                    end
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,92 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "CicloLectivoUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "CicloLectivoController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Acceso y Consulta General ==
+
+Actor -> UI: Acceder al módulo de ciclos lectivos
+activate UI
+
+UI -> Ctrl: obtenerCiclosLectivos()
+activate Ctrl
+
+== Verificación de Precondición ==
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl -> DB: consultarTodosLosCiclos()
+activate DB
+return listaCiclos
+
+Ctrl --> UI: mostrarCiclosExistentes(listaCiclos)
+deactivate Ctrl
+UI --> Actor: El sistema muestra el listado de ciclos lectivos registrados
+deactivate UI
+
+== Fase 2: Registro de un Nuevo Ciclo Lectivo ==
+
+Actor -> UI: Seleccionar "Crear nuevo ciclo" e ingresar el año
+activate UI
+
+UI -> Ctrl: registrarCicloLectivo(anio)
+activate Ctrl
+
+Ctrl -> Ctrl: validarAnioFormato(anio)
+
+alt Excepción 1: Año inválido (ej. formato erróneo o fuera de rango lógico)
+    Ctrl --> UI: error: El año ingresado no es válido
+    UI --> Actor: Mostrar mensaje "Error: Ingrese un año lectivo válido (ej. de 4 dígitos consecutivos)"
+else Formato de año correcto
+    
+    Ctrl -> DB: verificarCicloDuplicado(anio)
+    activate DB
+    return cicloExiste
+    
+    alt Excepción 2: Ciclo duplicado
+        Ctrl --> UI: error: El ciclo lectivo ya se encuentra registrado
+        UI --> Actor: Mostrar mensaje "Error: Ya existe un ciclo lectivo dado de alta para el año ingresado"
+        
+    else Ciclo único y disponible
+        
+        Ctrl -> DB: insertarCicloLectivo(anio)
+        activate DB
+        
+        alt Excepción 3: Error de persistencia (Fallo físico en base de datos)
+            DB --> Ctrl: error: SQLException / ConnectionTimeout
+            Ctrl --> UI: error: No se pudo completar el registro
+            UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente nuevamente"
+        else Escritura exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: registroCicloExitoso
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Ciclo lectivo registrado o actualizado"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,227 @@
+/* ── LAYOUT ─────────────────────────────── */
+.main {
+    padding-bottom: 80px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.top-bar h1 {
+    font-size: clamp(22px, 2vw, 32px);
+    color: #444;
+}
+
+/* ── CARD DE FILTROS ─────────────────────── */
+.filter-card {
+    background: #EBEBEB;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 820px;
+    margin-bottom: 28px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+/* ── SELECTS ─────────────────────────────── */
+.filter-grid select {
+    width: 100%;
+    padding: 10px 40px 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #bbb;
+    background-color: #f5f5f5;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23777' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.filter-grid select:hover {
+    border-color: #2563eb;
+    background-color: #fff;
+}
+
+.filter-grid select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background-color: #fff;
+}
+
+/* ── BOTONES FILTRO ─────────────────────── */
+.filter-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ── BOTONES DE ACCIÓN (Nueva materia etc) ─ */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    max-width: 820px;
+    margin-bottom: 28px;
+    justify-content: center;
+}
+
+.action-buttons .btn-primary {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+}
+
+/* Estado deshabilitado */
+.action-buttons .btn-primary:disabled {
+    background: #b0b8c9;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+
+/* ── ÁREA DE TABLA ───────────────────────── */
+.table-area {
+    max-width: 820px;
+}
+
+/* Mensaje placeholder */
+.table-placeholder {
+    background: #EBEBEB;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    color: #999;
+}
+
+.table-placeholder i {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 10px;
+    color: #bbb;
+}
+
+.table-placeholder p {
+    font-size: 15px;
+}
+
+/* Tablas */
+.year-block {
+    margin-bottom: 28px;
+}
+
+.cursada-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-size: 14px;
+}
+
+.cursada-table thead tr {
+    background: #EBEBEB;
+}
+
+.cursada-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+
+.cursada-table td {
+    padding: 11px 16px;
+    color: #555;
+    border-bottom: 1px solid #eee;
+}
+
+.cursada-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.cursada-table tbody tr:hover {
+    background: #f0f5ff;
+}
+
+/* Columna Año — más angosta */
+.cursada-table th:nth-child(2),
+.cursada-table td:nth-child(2) {
+    width: 70px;
+    text-align: center;
+}
+
+/* Columna lupa — icono */
+.cursada-table th:last-child,
+.cursada-table td:last-child {
+    width: 48px;
+    text-align: center;
+}
+
+.btn-lupa {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #2563eb;
+    font-size: 18px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.btn-lupa:hover {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media (max-width: 900px) {
+    .filter-card,
+    .action-buttons,
+    .table-area {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .action-buttons .btn-primary {
+        min-width: calc(50% - 4px);
+    }
+
+    .cursada-table th:nth-child(3),
+    .cursada-table td:nth-child(3) {
+        display: none; /* oculta Profesores en mobile muy chico */
+    }
+}

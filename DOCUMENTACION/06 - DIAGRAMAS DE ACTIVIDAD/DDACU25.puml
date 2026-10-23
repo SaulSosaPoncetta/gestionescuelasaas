@@ -1,0 +1,83 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-25 - Asignar Docente a Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona una materia;
+:Solicita asignar docente;
+
+|Interfaz|
+:Enviar solicitud de asignación\npara la materia seleccionada;
+
+|Sistema|
+:Buscar materia en la base de datos;
+
+if (§¿Materia existe?) then (Si)
+  :Obtener lista de docentes\nregistrados y disponibles;
+  
+  |Interfaz|
+  :Mostrar lista de docentes disponibles;
+  
+  |Administrador / Secretaría|
+  :Selecciona un docente\ny confirma la asignación;
+  
+  |Interfaz|
+  :Enviar datos de asignación\n(Materia y Docente);
+  
+  |Sistema|
+  :Verificar existencia del docente;
+  
+  if (§¿Docente existe?) then (Si)
+    :Verificar si el docente ya\nestá asociado a la materia;
+    
+    if (§¿Docente previamente asignado?) then (No)
+      :Registrar la relación\nentre docente y materia;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde asignación exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar al docente asignado\na la materia;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (Si)
+      |Interfaz|
+      :Mostrar mensaje de error:\nDocente ya asignado a esta materia;
+      
+      |Administrador / Secretaría|
+      :Seleccionar otro docente;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nDocente inexistente;
+    
+    |Administrador / Secretaría|
+    :Regresar a la selección;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

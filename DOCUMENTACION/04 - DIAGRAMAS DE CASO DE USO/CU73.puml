@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Alumno" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-73: Estudiante se Da de Baja de una Mesa de Examen" as CU73
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Alumno Autenticado e\nInscripción Registrada (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Sección y Mostrar Inscripciones" as Sec1
+    usecase "Seleccionar Inscripción y Verificar Correspondencia" as Sec2
+    usecase "Procesar Baja e Informar Cancelación" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Inscripción Cancelada y Eliminada del Listado\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Posee Inscripción / Exc 2: Inscripción de Otro Usuario" as Exc1_2
+    usecase "Exc 3: Inscripción no Puede ser Cancelada" as Exc3
+    usecase "Exc 4: Error Durante la Operación" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU73
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU73 ..> Precond : <<include>>
+    CU73 ..> Sec1 : <<include>>
+    CU73 ..> Sec2 : <<include>>
+    CU73 ..> Sec3 : <<include>>
+    CU73 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1_2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+}
+@enduml

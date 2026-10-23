@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-52 - Docente Consulta Sus Datos
+
+|Docente|
+start
+:Selecciona la opción "Mis Datos";
+
+|Interfaz|
+:Solicitar perfil e información del docente;
+
+|Sistema|
+:Verificar autenticación del docente;
+
+if (§¿Docente autenticado?) then (Si)
+  :Verificar si el usuario posee rol Docente;
+
+  if (§¿Posee rol Docente?) then (Si)
+    :Buscar datos del docente en la base de datos;
+
+    if (§¿Existen datos de perfil?) then (Si)
+      :Recuperar información personal y académica;
+
+      if (§¿Consulta exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar datos del perfil del docente;
+
+        |Docente|
+        :Visualizar su información personal;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error\nde lectura en la BD;
+
+        |Docente|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje:\nNo se encontraron datos de perfil;
+
+      |Docente|
+      :Visualizar pantalla vacía o notificación;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nAcceso denegado (Rol no adecuado);
+
+    |Docente|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Docente|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

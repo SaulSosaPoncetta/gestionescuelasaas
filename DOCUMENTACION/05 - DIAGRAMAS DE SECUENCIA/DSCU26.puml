@@ -1,0 +1,127 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "AsignacionEstudiantesUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "InscripcionController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección de Materia y Búsqueda de Estudiantes ==
+
+Actor -> UI: Seleccionar una materia del listado
+activate UI
+
+Actor -> UI: Solicitar agregar estudiantes
+
+UI -> Ctrl: obtenerEstudiantesDisponibles(materiaId)
+activate Ctrl
+
+== Verificación de Materia y Ciclo Lectivo (Precondiciones) ==
+Ctrl -> DB: verificarMateriaYCicloActivo(materiaId)
+activate DB
+return estadoMateriaYCiclo
+
+alt Excepción 1: Materia inexistente (o Ciclo lectivo inactivo)
+    Ctrl --> UI: error: Materia no válida o ciclo lectivo cerrado
+    UI --> Actor: Mostrar mensaje "Error: La materia seleccionada no pertenece a un ciclo activo"
+else Materia y Ciclo válidos
+    
+    Ctrl -> DB: buscarEstudiantesAptosPorCarrera(materiaId)
+    activate DB
+    return listaEstudiantesBase
+    
+    alt Excepción 4: No existen estudiantes disponibles
+        Ctrl --> UI: listaVacía
+        UI --> Actor: Mostrar mensaje "No se encontraron estudiantes habilitados para cursar esta materia"
+    else Estudiantes encontrados
+        Ctrl --> UI: mostrarEstudiantesDisponibles(listaEstudiantesBase)
+        deactivate Ctrl
+        UI --> Actor: El sistema muestra el listado de estudiantes disponibles
+        deactivate UI
+
+        == Fase 2: Selección Múltiple y Registro Sincronizado ==
+
+        Actor -> UI: Seleccionar uno o varios estudiantes y confirmar
+        activate UI
+        
+        UI -> Ctrl: registrarAsociaciones(materiaId, listaEstudiantesIds)
+        activate Ctrl
+        
+        == Inicio de Transacción Atómica de Sincronización ==
+        Ctrl -> DB: iniciarTransaccion()
+        activate DB
+        deactivate DB
+        
+        loop Por cada estudiante seleccionado en la lista
+            
+            Ctrl -> DB: verificarEstudianteRegistrado(estudianteId)
+            activate DB
+            return estudianteExiste
+            
+            alt Excepción 2: Estudiante inexistente
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: Uno de los estudiantes ya no existe
+                UI --> Actor: Mostrar mensaje "Error: El estudiante seleccionado no figura en el sistema"
+                
+            else Estudiante existe
+                
+                Ctrl -> DB: verificarAsociacionPrevia(materiaId, estudianteId)
+                activate DB
+                return yaAsociado
+                
+                alt Excepción 3: Estudiante ya asociado
+                    Ctrl -> DB: rollback()
+                    activate DB
+                    deactivate DB
+                    Ctrl --> UI: error: Alumno ya inscripto
+                    UI --> Actor: Mostrar mensaje "Error: Uno de los estudiantes ya está cursando la materia"
+                    
+                else Registro limpio
+                    Ctrl -> DB: insertarRelacionMateriaEstudiante(materiaId, estudianteId)
+                    activate DB
+                    deactivate DB
+                end
+            end
+        end
+        
+        alt Excepción 5: Error de persistencia (Fallo en la confirmación física)
+            DB --> Ctrl: error: SQLException / TransactionException
+            Ctrl -> DB: rollback()
+            activate DB
+            deactivate DB
+            Ctrl --> UI: error: Fallo al sincronizar registros
+            UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente de nuevo"
+        else Sincronización exitosa (Flujo Normal)
+            
+            Ctrl -> DB: commitTransaccion()
+            activate DB
+            deactivate DB
+            
+            Ctrl --> UI: sincronizacionExitosaConfirmada
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Los estudiantes quedan asociados"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

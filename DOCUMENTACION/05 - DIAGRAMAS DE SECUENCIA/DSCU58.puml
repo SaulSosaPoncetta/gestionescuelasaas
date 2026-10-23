@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaAlumnos" as Vista
+control "MateriaController" as Ctrl
+entity "MateriaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-58: Docente Restaura Alumno a Cursando
+
+Docente -> Vista : Seleccionar materia y ver alumnos
+activate Vista
+Vista -> Ctrl : obtenerAlumnosMateria(idMateria)
+activate Ctrl
+Ctrl --> Vista : Mostrar listado de alumnos
+deactivate Ctrl
+
+Docente -> Vista : Seleccionar alumno y solicitar "Restaurar a Cursando"
+Vista -> Ctrl : restaurarCursadaAlumno(idMateria, idAlumno)
+activate Ctrl
+
+Ctrl -> Service : actualizarEstadoCursada(idMateria, idAlumno, "Cursando")
+activate Service
+Service -> BD : consultarInscripcion(idMateria, idAlumno)
+activate BD
+BD --> Service : RegistroInscripcion / null
+deactivate BD
+
+alt Excepción 1 / 3: Alumno o Materia inexistente
+    Service --> Ctrl : Error("Materia o Alumno inexistente")
+    Ctrl --> Vista : Mostrar error
+    Vista --> Docente : Informar entidad inexistente
+else Excepción 2: No existe inscripción correspondiente
+    Service --> Ctrl : Error("No hay inscripción previa para restaurar")
+    Ctrl --> Vista : Mostrar error de registro
+    Vista --> Docente : Informar ausencia de inscripción
+else Inscripción Válida
+    Service -> BD : guardarEstadoCursada(idMateria, idAlumno, "Cursando")
+    activate BD
+    
+    alt Excepción 4: Error durante la actualización
+        BD --> Service : ErrorActualización
+        Service --> Ctrl : Error("Fallo del sistema al actualizar")
+        Ctrl --> Vista : Mostrar mensaje de error
+        Vista --> Docente : Informar falla en el proceso
+    else Actualización Exitosa (Secuencia Normal)
+        BD --> Service : RegistroExitoso
+        deactivate BD
+        Service --> Ctrl : OperacionExitosa
+        deactivate Service
+        Ctrl --> Vista : NotificarResultado("Estado restaurado a Cursando")
+        deactivate Ctrl
+        Vista --> Docente : Informar resultado exitoso
+        deactivate Vista
+    end
+end
+
+@enduml

@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-66 - Estudiante Consulta Carrera
+
+|Estudiante|
+start
+:Selecciona la opción "Consultar Carrera";
+
+|Interfaz|
+:Solicitar información de la carrera del estudiante;
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Buscar carrera asociada al estudiante en la base de datos;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Posee carrera asociada?) then (Si)
+      :Verificar estado de la carrera;
+
+      if (§¿Carrera disponible / activa?) then (Si)
+        :Recuperar detalles de la carrera\n(nombre, plan, estado);
+
+        |Interfaz|
+        :Mostrar la información de la carrera;
+
+        |Estudiante|
+        :Visualizar datos de su carrera;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nCarrera no disponible actualmente;
+
+        |Estudiante|
+        :Visualizar mensaje de advertencia;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nAlumno sin carrera asociada;
+
+      |Estudiante|
+      :Visualizar mensaje de advertencia;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nError al recuperar información de la BD;
+
+    |Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

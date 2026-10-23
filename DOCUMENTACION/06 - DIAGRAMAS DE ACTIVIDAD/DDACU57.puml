@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-57 - Docente Reprueba a Alumno
+
+|Docente|
+start
+:Selecciona un alumno y presiona "Reprobar Alumno";
+
+|Interfaz|
+:Solicitar reprobación del alumno seleccionado;
+
+|Sistema|
+:Verificar existencia del alumno y la materia;
+
+if (§¿Alumno y materia existen?) then (Si)
+  :Verificar inscripción del alumno en la materia;
+
+  if (§¿Alumno inscripto en la materia?) then (Si)
+    :Actualizar el estado de la cursada a "Reprobado";
+
+    if (§¿Actualización en BD exitosa?) then (Si)
+      |Interfaz|
+      :Actualizar planilla y mostrar mensaje:\nAlumno marcado como Reprobado;
+
+      |Docente|
+      :Visualizar planilla actualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error\nde actualización en BD;
+
+      |Docente|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nEl alumno no pertenece a esta materia;
+
+    |Docente|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nRegistro de alumno o materia no encontrado;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

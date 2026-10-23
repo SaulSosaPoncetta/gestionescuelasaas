@@ -1,0 +1,67 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaLogin" as Vista
+control "AuthControlador" as Ctrl
+entity "UsuarioService" as Service
+database "BaseDeDatos" as BD
+entity "SesionUsuario" as Sesion
+
+title Diagrama de Secuencia - CU-51: Docente Inicia Sesión
+
+== Inicio de Sesión ==
+Docente -> Vista : Acceder a pantalla de inicio de sesión
+activate Vista
+Vista --> Docente : Solicitar credenciales (Usuario, Contraseña)
+deactivate Vista
+
+Docente -> Vista : Ingresar credenciales
+activate Vista
+Vista -> Ctrl : iniciarSesion(usuario, password)
+activate Ctrl
+
+Ctrl -> Service : validarCredenciales(usuario, password)
+activate Service
+Service -> BD : buscarUsuario(usuario)
+activate BD
+BD --> Service : Datos del usuario / null
+deactivate BD
+
+alt Excepción 2: Usuario inexistente
+    Service --> Ctrl : Error("Usuario no registrado")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar usuario no existente
+else Excepción 1: Credenciales incorrectas
+    Service --> Ctrl : Error("Contraseña incorrecta")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar credenciales inválidas
+else Excepción 4: Error durante la autenticación
+    Service --> Ctrl : Error("Error del sistema / BD no disponible")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar fallo de sistema
+else Credenciales Válidas
+    Service --> Ctrl : UsuarioAutenticado(rol)
+    deactivate Service
+
+    Ctrl -> Ctrl : verificarRol(usuario, "Docente")
+    
+    alt Excepción 3: Usuario sin permisos
+        Ctrl --> Vista : Mostrar mensaje ("Acceso denegado para el rol")
+        Vista --> Docente : Informar falta de permisos
+    else Rol Docente Confirmado (Secuencia Normal)
+        Ctrl -> Sesion : crearSesion(usuario, rol)
+        activate Sesion
+        Sesion --> Ctrl : Sesión activa creada
+        deactivate Sesion
+
+        Ctrl --> Vista : Autenticación exitosa (Redirigir a Panel Docente)
+        deactivate Ctrl
+        Vista --> Docente : Permitir acceso a funcionalidades de Docente
+        deactivate Vista
+    end
+end
+
+@enduml

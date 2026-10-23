@@ -1,0 +1,55 @@
+/* ─── BOTONES BASE ───────────────────────── */
+.btn-primary,
+.btn-secondary {
+    padding: 10px 26px;
+    font-size: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition:
+        background 0.18s,
+        transform 0.1s,
+        border-color 0.18s;
+}
+
+/* PRIMARY */
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* SECONDARY */
+.btn-secondary {
+    background: transparent;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+}
+
+.btn-secondary:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.buscar-alumno-final {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+
+.buscar-alumno-final .btn-agregar {
+    justify-self: start;
+    width: auto;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .btn-primary,
+    .btn-secondary {
+        min-width: 120px;
+        text-align: center;
+    }
+}

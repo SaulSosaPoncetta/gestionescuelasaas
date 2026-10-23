@@ -1,0 +1,137 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Actor\n(Admin/Sec/Est)" as Actor
+box "Capa de Presentación" 
+    participant "PlanesGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "PlanEstudioController" as Ctrl
+    participant "AuthorizationService" as Auth
+    participant "FileStorageService" as Storage
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Acceso y Consulta General ==
+
+Actor -> UI: Acceder al módulo de planes
+activate UI
+
+UI -> Ctrl: obtenerPlanesExistentes()
+activate Ctrl
+
+Ctrl -> DB: consultarTodosLosPlanes()
+activate DB
+return listaPlanes
+
+Ctrl --> UI: mostrarPlanes(listaPlanes)
+deactivate Ctrl
+UI --> Actor: El sistema muestra el listado de planes existentes
+deactivate UI
+
+== Fase 2: Registro de un Nuevo Plan ==
+
+Actor -> UI: Seleccionar "Agregar" nuevo plan
+activate UI
+
+UI -> Ctrl: verificarPermisoCreacion()
+activate Ctrl
+
+Ctrl -> Auth: comprobarPermisosAdministrativos()
+activate Auth
+return tienePermisosOk
+
+Ctrl --> UI: habilitarFormularioAlta()
+deactivate Ctrl
+UI --> Actor: Mostrar campos del formulario y botón de adjunto
+deactivate UI
+
+Actor -> UI: Ingresar título, resolución, carrera, horas, fecha y adjuntar archivo
+activate UI
+
+alt Excepción 3: Datos incompletos
+    UI --> Actor: Mostrar advertencia "Por favor, complete todos los campos obligatorios"
+else Formulario completo
+    UI -> Ctrl: registrarPlanEstudio(datosPlan, archivoDocumentacion)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosPlan)
+    
+    == Verificación de Carrera (Precondición) ==
+    Ctrl -> DB: verificarCarreraExistente(datosPlan.carreraId)
+    activate DB
+    return carreraExiste
+    
+    alt Excepción 1: Carrera inexistente
+        Ctrl --> UI: error: La carrera seleccionada no existe
+        UI --> Actor: Mostrar mensaje "Error: La carrera asociada no es válida"
+        
+    else Carrera válida
+        
+        Ctrl -> DB: verificarPlanDuplicado(datosPlan.resolucion)
+        activate DB
+        return planExiste
+        
+        alt Excepción 4: Plan duplicado
+            Ctrl --> UI: error: Resolución ya registrada
+            UI --> Actor: Mostrar mensaje "Ya existe un plan de estudio bajo esa resolución institucional"
+            
+        else Plan único
+            
+            == Procesamiento del Archivo Adjunto ==
+            Ctrl -> Storage: validarYGuardarArchivo(archivoDocumentacion)
+            activate Storage
+            
+            alt Excepción 2: Archivo inválido (Extensión o tamaño incorrecto)
+                Storage --> Ctrl: InvalidFileException
+                Ctrl --> UI: error: Documentación en formato no permitido
+                UI --> Actor: Mostrar mensaje "El archivo adjunto debe ser un PDF válido"
+                
+            else Excepción 5: Error de almacenamiento (Fallo de disco / Red)
+                Storage --> Ctrl: StorageException
+                Ctrl --> UI: error: No se pudo guardar la documentación
+                UI --> Actor: Mostrar mensaje "Fallo al procesar el archivo, intente de nuevo"
+                
+            else Almacenamiento de archivo exitoso
+                return rutaArchivoConfigurada
+                
+                == Impacto Transaccional en Base de Datos ==
+                Ctrl -> DB: iniciarTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl -> DB: insertarPlanEstudio(datosPlan, rutaArchivoConfigurada)
+                activate DB
+                return nuevoPlanId
+                
+                Ctrl -> DB: asociarPlanACarrera(nuevoPlanId, datosPlan.carreraId)
+                activate DB
+                deactivate DB
+                
+                Ctrl -> DB: commitTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl --> UI: registroPlanExitoso
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación y asocia el plan a la carrera
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

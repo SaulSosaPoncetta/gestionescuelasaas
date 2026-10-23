@@ -1,0 +1,82 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-35 - Cargar Notas de Examen Final
+
+|Administrador / Secretaría|
+start
+:Selecciona la mesa de examen;
+:Accede a la carga de notas;
+
+|Interfaz|
+:Enviar solicitud de carga de notas\npara la mesa seleccionada;
+
+|Sistema|
+:Buscar mesa de examen en la base de datos;
+
+if (§¿Mesa de examen existe?) then (Si)
+  :Obtener estudiantes inscriptos\nen la mesa de examen;
+  
+  if (§¿Existen estudiantes inscriptos?) then (Si)
+    |Interfaz|
+    :Mostrar plantilla/lista de estudiantes\npara ingreso de notas finales;
+    
+    |Administrador / Secretaría|
+    :Ingresa las calificaciones finales\ny confirma la operación;
+    
+    |Interfaz|
+    :Enviar calificaciones ingresadas;
+    
+    |Sistema|
+    :Validar completitud de datos,\npertenencia de estudiantes y rango válido;
+    
+    if (§¿Notas completas, válidas\ny estudiantes inscriptos?) then (Si)
+      :Guardar calificaciones de examen final\nen la base de datos;
+      :Actualizar la situación académica\nde cada estudiante;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde carga de notas exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar las calificaciones\ny situación académica actualizadas;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error: Datos incompletos,\nnota inválida o estudiante no inscripto;
+      
+      |Administrador / Secretaría|
+      :Corregir las calificaciones ingresadas;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje: No existen\nestudiantes inscriptos en la mesa;
+    
+    |Administrador / Secretaría|
+    :Visualizar aviso sin registros;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMesa de examen inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de mesas;
+  stop
+endif
+
+@enduml

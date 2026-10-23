@@ -1,0 +1,62 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-51 - Docente Inicia Sesión
+
+|Docente|
+start
+:Ingresa a la plataforma;
+
+|Interfaz|
+:Solicitar credenciales\n(Usuario y Contraseña);
+
+repeat
+  |Docente|
+  :Ingresar Usuario y Contraseña;
+
+  |Interfaz|
+  :Enviar datos de inicio de sesión;
+
+  |Sistema|
+  :Validar existencia del usuario;
+
+  if (§¿Usuario existe?) then (Si)
+    :Validar contraseña ingresada;
+
+    if (§¿Contraseña correcta?) then (Si)
+      :Verificar rol del usuario;
+
+      if (§¿Posee rol Docente?) then (Si)
+        :Generar sesión de usuario;
+
+        |Interfaz|
+        :Redirigir al Panel Principal del Docente;
+
+        |Docente|
+        :Visualizar panel principal;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nAcceso denegado (Rol no adecuado);
+
+        |Docente|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nCredenciales incorrectas;
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nUsuario no registrado;
+  endif
+
+  |Docente|
+repeat while (§¿Desea reintentar ingreso?) is (Si)
+stop
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaHistorialCursadas" as Vista
+control "CursadaDocController" as Ctrl
+entity "HistorialCursadasService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-61: Docente Consulta Historial de Cursadas
+
+Docente -> Vista : Acceder a opción de historial de cursadas
+activate Vista
+Vista -> Ctrl : obtenerHistorialCursadas()
+activate Ctrl
+
+Ctrl -> Service : consultarHistorialCursadasDocente(idDocenteAutenticado)
+activate Service
+Service -> BD : buscarCursadasHistoricas(idDocente)
+activate BD
+BD --> Service : ListaHistorial / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1: No existen registros
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar vista ("Sin historial de cursadas")
+    Vista --> Docente : Informar falta de registros
+else Excepción 2: Error durante la consulta
+    Service --> Ctrl : Error("Error de conexión con BD")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar fallo del sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaHistorial
+    deactivate Service
+    Ctrl --> Vista : MostrarResultadosHistorial(ListaHistorial)
+    deactivate Ctrl
+    Vista --> Docente : Presentar el historial de cursadas
+    deactivate Vista
+end
+
+@enduml

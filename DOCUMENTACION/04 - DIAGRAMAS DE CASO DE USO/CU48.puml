@@ -1,0 +1,48 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores (Incluye al "Sistema" como actor/proceso automatizado)
+actor "Estudiante" as Act1
+actor "Sistema (EstudianteFinalesService)" as Act2
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-48: Consultar Situación Académica para Final" as CU48
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Estudiante Autenticado, Materia Existente\ny Carrera Activa (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Identificar Estudiante y Consultar Cursada" as Sec1
+    usecase "Verificar Aprobación Previa y Correlativas" as Sec2
+    usecase "Determinar Habilitación y Devolver Resultado" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Habilitación o Rechazo para Rendir Determinado\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 4: Carrera Inactiva" as Exc4
+    usecase "Exc 1: No Existe Situación de Cursada" as Exc1
+    usecase "Exc 3: Materia ya Aprobada" as Exc3
+    usecase "Exc 2: Correlativas no Cumplidas" as Exc2
+
+    ' Conexión de Actores al caso raíz
+    Act1 --> CU48
+    Act2 --> CU48
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU48 ..> Precond : <<include>>
+    CU48 ..> Sec1 : <<include>>
+    CU48 ..> Sec2 : <<include>>
+    CU48 ..> Sec3 : <<include>>
+    CU48 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc4 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

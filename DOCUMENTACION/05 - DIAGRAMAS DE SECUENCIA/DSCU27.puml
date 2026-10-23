@@ -1,0 +1,124 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "PlanillaNotasUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "NotaController" as Ctrl
+    participant "CursadaService" as Service
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección de Materia y Carga de la Planilla ==
+
+Actor -> UI: Seleccionar una materia del listado
+activate UI
+
+UI -> Ctrl: obtenerPlanillaNotas(materiaId)
+activate Ctrl
+
+== Verificación de Materia (Precondición 1) ==
+Ctrl -> DB: verificarMateriaExiste(materiaId)
+activate DB
+return materiaExiste
+
+alt Excepción 3: Materia inexistente
+    Ctrl --> UI: error: Materia no válida
+    UI --> Actor: Mostrar mensaje "Error: La materia seleccionada no existe en el sistema"
+else Materia válida
+    
+    Ctrl -> DB: obtenerEstudiantesAsociadosAMateria(materiaId)
+    activate DB
+    return listaEstudiantes
+    
+    alt Excepción 2: Estudiante inexistente (Falta de asociaciones base)
+        Ctrl --> UI: listaVacia
+        UI --> Actor: Mostrar mensaje "Error: No existen estudiantes asociados o inscriptos a esta materia"
+    else Estudiantes encontrados (Precondición 2 cumplida)
+        Ctrl --> UI: mostrarPlanillaCarga(listaEstudiantes)
+        deactivate Ctrl
+        UI --> Actor: El sistema renderiza la planilla con los estudiantes para ingresar notas
+        deactivate UI
+
+        == Fase 2: Ingreso, Validación y Evaluación de Condiciones ==
+
+        Actor -> UI: Ingresar las calificaciones de los alumnos y confirmar
+        activate UI
+        
+        alt Excepción 4: Datos incompletos (Faltan ingresar notas obligatorias)
+            UI --> Actor: Mostrar advertencia "Por favor, complete las calificaciones de todos los alumnos"
+        else Formulario completo
+            UI -> Ctrl: guardarNotasPlanilla(materiaId, listaNotasIngresadas)
+            activate Ctrl
+            
+            == Inicio de Transacción Atómica de Notas ==
+            Ctrl -> DB: iniciarTransaccion()
+            activate DB
+            deactivate DB
+            
+            loop Por cada nota ingresada en el lote
+                
+                Ctrl -> Ctrl: validarRangoNota(nota.valor)
+                
+                alt Excepción 1: Nota fuera del rango permitido
+                    Ctrl -> DB: rollback()
+                    activate DB
+                    deactivate DB
+                    Ctrl --> UI: error: Formato de nota fuera de rango (ej. mayor a 10 o menor a 1)
+                    UI --> Actor: Mostrar mensaje "Error: Una o más calificaciones poseen un valor no permitido"
+                    
+                else Nota en rango válido
+                    
+                    Ctrl -> DB: guardarCalificacionEstudiante(materiaId, nota.estudianteId, nota.valor)
+                    activate DB
+                    deactivate DB
+                    
+                    == Evaluación de Condiciones de Cierre (Paso 7) ==
+                    Ctrl -> Service: evaluarCondicionFinal(nota.valor)
+                    activate Service
+                    return nuevaSituacionAcademica (ej. Regular / Promocionado / Libre)
+                    
+                    Ctrl -> DB: actualizarSituacionCursada(materiaId, nota.estudianteId, nuevaSituacionAcademica)
+                    activate DB
+                    deactivate DB
+                end
+            end
+            
+            alt Excepción 5: Error de persistencia (Fallo al confirmar el lote)
+                DB --> Ctrl: error: SQLException / TransactionException
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: No se pudieron registrar las calificaciones
+                UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente de nuevo"
+            else Transacción exitosa
+                
+                Ctrl -> DB: commitTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl --> UI: confirmacionOperacionExitosa
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación: "Calificaciones y estados de cursada registrados"
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

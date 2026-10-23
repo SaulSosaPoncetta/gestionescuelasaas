@@ -1,0 +1,90 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "DocenteConsultasUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "DocenteController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Acceso al Módulo y Carga Inicial ==
+
+Actor -> UI: Acceder al módulo de docentes
+activate UI
+
+UI -> Ctrl: iniciarModuloConsultas()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl -> DB: obtenerTodosLosDocentes()
+activate DB
+
+alt Excepción 2: Error de consulta (Fallo de base de datos)
+    DB --> Ctrl: error: SQLException / ConnectionTimeout
+    Ctrl --> UI: error: No se pudo recuperar la información
+    UI --> Actor: Mostrar mensaje "Error de consulta, reintente más tarde"
+else Consulta física exitosa
+    return registrosDocentes
+    
+    alt Excepción 1: No existen coincidencias (Base de datos vacía)
+        Ctrl --> UI: listaVacia
+        UI --> Actor: Mostrar listado vacío con mensaje "No hay docentes registrados en el sistema"
+    else Registros encontrados (Flujo Normal Inicial)
+        Ctrl --> UI: listaDocentes
+        deactivate Ctrl
+        UI --> Actor: Muestra el listado general de docentes
+        deactivate UI
+    end
+end
+
+== Fase 2: Filtrado por Criterios y Selección ==
+
+Actor -> UI: Ingresar criterios de búsqueda y aplicar filtros
+activate UI
+
+UI -> Ctrl: filtrarDocentes(criterios)
+activate Ctrl
+
+Ctrl -> DB: buscarDocentesConFiltro(criterios)
+activate DB
+return resultadosFiltrados
+
+alt Excepción 1: No existen coincidencias (Sin resultados)
+    Ctrl --> UI: resultadosVacios
+    UI --> Actor: Mostrar mensaje "No se encontraron docentes que coincidan con los criterios ingresados"
+else Coincidencias encontradas
+    Ctrl --> UI: listaFiltrada
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra los resultados de la búsqueda
+    deactivate UI
+    
+    == Consulta de Detalle Individual ==
+    Actor -> UI: Seleccionar un docente específico de la lista
+    activate UI
+    UI --> Actor: Mostrar panel con la información detallada del docente seleccionado
+    deactivate UI
+end
+
+@enduml

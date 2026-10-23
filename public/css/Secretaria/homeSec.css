@@ -1,0 +1,91 @@
+/* MAIN
+   - margin-left igual al sidebar
+   - El max-width evita que en 2K el contenido se estire a lo ancho de toda la pantalla
+   - Se centra con margin: 0 auto dentro del espacio disponible
+*/
+/* .main {
+    margin-left: var(--sidebar-width);
+    padding: 24px;
+    width: calc(100% - var(--sidebar-width)); */
+
+    /* CLAVE para 2K: limita el ancho del contenido central */
+    /* box-sizing: border-box;
+
+} */
+
+/* Wrapper interno para centrar y limitar el grid en pantallas grandes */
+/* .main-inner {
+    max-width: 960px;   /* el grid no crece más allá de esto
+    margin: 0 auto;    se centra en el espacio disponible
+} */
+
+/* GRID
+   - repeat(4, 1fr) en desktop: siempre 4 columnas sin importar el monitor
+   - En tablets baja a 3, en mobile a 2
+*/
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap);
+}
+
+/* CARDS */
+.card {
+    background: #e6e6e6;
+    border-radius: var(--card-radius);
+    padding: 18px;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    text-align: center;
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.18),
+                -5px -5px 10px rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid rgb(149, 149, 149);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* saca subrayado */
+    color: inherit;        /* usa el color normal */
+    display: flex;         /* mantiene tu layout */
+}
+
+.card:hover {
+    transform: scale(1.02);
+    text-decoration: none;
+    color: inherit;
+}
+
+.card i {
+    font-size: 28px;
+    color: #777;
+}
+
+.card p {
+    margin-top: 6px;
+    font-weight: bold;
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* ─── RESPONSIVE ──────────────────────────────────── */
+
+/* Monitores medianos: 3 columnas */
+@media (max-width: 1100px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Tablets: 2 columnas */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

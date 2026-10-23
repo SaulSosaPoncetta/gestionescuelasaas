@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-47: Asociar Documentación a Plan" as CU47
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Carrera, Archivo Disponible\ny Permisos Administrativos (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Carrera y Acceder a Gestión del Plan" as Sec1
+    usecase "Ingresar Datos del Plan y Seleccionar Archivo" as Sec2
+    usecase "Validar Archivo, Registrar Documentación\ny Asociar Plan a Carrera" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Documentación Asociada al Plan\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 3: Carrera Inexistente" as Exc3
+    usecase "Exc 1 y 4: Archivo Inexistente / Datos Inválidos" as Exc_Datos
+    usecase "Exc 2: Formato No Permitido" as Exc2
+    usecase "Exc 5: Error de Almacenamiento" as Exc5
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU47
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU47 ..> Precond : <<include>>
+    CU47 ..> Sec1 : <<include>>
+    CU47 ..> Sec2 : <<include>>
+    CU47 ..> Sec3 : <<include>>
+    CU47 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc3 ..> Sec1 : <<extend>>
+    Exc_Datos ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc5 ..> Sec3 : <<extend>>
+}
+@enduml

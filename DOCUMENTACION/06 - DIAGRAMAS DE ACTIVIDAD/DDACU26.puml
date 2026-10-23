@@ -1,0 +1,81 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-26 - Asignar Estudiantes a Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona la materia;
+:Solicita agregar estudiantes;
+
+|Interfaz|
+:Enviar solicitud de asignación\npara la materia seleccionada;
+
+|Sistema|
+:Verificar existencia de la materia\ny ciclo lectivo activo;
+
+if (§¿Materia existe y hay\nciclo lectivo activo?) then (Si)
+  :Buscar estudiantes disponibles\n(registrados y elegibles);
+  
+  if (§¿Existen estudiantes disponibles?) then (Si)
+    |Interfaz|
+    :Mostrar lista de estudiantes disponibles;
+    
+    |Administrador / Secretaría|
+    :Selecciona los estudiantes\ny confirma la operación;
+    
+    |Interfaz|
+    :Enviar estudiantes seleccionados;
+    
+    |Sistema|
+    :Verificar validez de los estudiantes\ny que no estén ya asociados;
+    
+    if (§¿Estudiantes válidos y\nsin asociación previa?) then (Si)
+      :Registrar / sincronizar las\nasociaciones con la materia;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde asignación exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar a los estudiantes\nasociados a la materia;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nEstudiante inexistente o ya asociado;
+      
+      |Administrador / Secretaría|
+      :Revisar la selección de estudiantes;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje: No existen\nestudiantes disponibles;
+    
+    |Administrador / Secretaría|
+    :Visualizar aviso sin registros;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente o sin ciclo lectivo activo;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

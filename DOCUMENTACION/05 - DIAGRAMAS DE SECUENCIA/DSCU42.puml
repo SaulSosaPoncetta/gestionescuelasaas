@@ -1,0 +1,93 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "PlanEstudioUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "PlanEstudioController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso al Plan de Estudio ==
+
+Actor -> UI: Acceder al plan de estudio
+activate UI
+
+UI -> Ctrl: consultarPlanEstudio()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Identificación de la Carrera ==
+
+    Ctrl -> DB: identificarCarrera(estudiante)
+    activate DB
+    return carrera
+
+    == Fase 3: Consulta del Plan de Estudio ==
+
+    Ctrl -> DB: consultarPlanEstudio(carrera)
+    activate DB
+
+    alt Excepción 1: Carrera sin plan
+
+        DB --> Ctrl: carrera sin plan
+        Ctrl --> UI: error: Carrera sin plan
+        UI --> Actor: Mostrar mensaje "La carrera no posee un plan de estudio registrado"
+
+    else Carrera con plan
+
+        alt Excepción 2: Plan inexistente
+
+            DB --> Ctrl: plan inexistente
+            Ctrl --> UI: error: Plan inexistente
+            UI --> Actor: Mostrar mensaje "El plan de estudio no existe"
+
+        else Plan existente
+
+            return planEstudio
+
+            == Fase 4: Visualización del Plan ==
+
+            Ctrl --> UI: mostrarPlanEstudio(planEstudio)
+            deactivate Ctrl
+
+            UI --> Actor: Mostrar materias e información disponible
+            deactivate UI
+
+        end
+    end
+end
+
+@enduml

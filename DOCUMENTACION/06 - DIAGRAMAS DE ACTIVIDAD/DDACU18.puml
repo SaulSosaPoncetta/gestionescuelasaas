@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-18 - Consultar Carreras
+
+|Actor|
+start
+:Accede al módulo de carreras;
+
+|Interfaz|
+:Solicitar listado de carreras;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Recuperar carreras\ndesde la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen carreras?) then (Si)
+      |Interfaz|
+      :Mostrar listado de carreras;
+      
+      |Actor|
+      :Selecciona una carrera del listado;
+      
+      |Interfaz|
+      :Solicitar detalle de la carrera;
+      
+      |Sistema|
+      :Recuperar información detallada;
+      
+      |Interfaz|
+      :Mostrar información\nde la carrera seleccionada;
+      
+      |Actor|
+      :Visualizar datos e información\nde la carrera;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen\ncarreras registradas;
+      
+      |Actor|
+      :Visualizar pantalla sin resultados;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Actor|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Actor|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

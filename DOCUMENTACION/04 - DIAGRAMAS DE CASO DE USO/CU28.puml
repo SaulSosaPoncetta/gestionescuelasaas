@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-28: Reprobar Estudiante en Materia" as CU28
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Materia y\nAsociación del Estudiante (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Materia y Estudiante" as Sec1
+    usecase "Solicitar Reprobación y Actualizar Situación" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Situación Académica Registrada como Reprobada\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2: Materia Inexistente" as Exc2
+    usecase "Exc 1: Estudiante no Asociado" as Exc1
+    usecase "Exc 3: Error de Actualización" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU28
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU28 ..> Precond : <<include>>
+    CU28 ..> Sec1 : <<include>>
+    CU28 ..> Sec2 : <<include>>
+    CU28 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

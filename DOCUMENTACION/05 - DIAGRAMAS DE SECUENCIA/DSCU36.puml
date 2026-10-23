@@ -1,0 +1,127 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "MesaExamenUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "MesaExamenController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Mesa ==
+
+Actor -> UI: Seleccionar mesa de examen
+activate UI
+
+UI -> Ctrl: consultarMesa(idMesa)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> DB: consultarMesa(idMesa)
+    activate DB
+    return mesa
+
+    alt Excepción 1: Mesa inexistente
+
+        Ctrl --> UI: error: La mesa no existe
+        UI --> Actor: Mostrar mensaje "La mesa de examen seleccionada no existe"
+
+    else Mesa existente
+
+        == Fase 2: Selección de Estudiante ==
+
+        Actor -> UI: Seleccionar estudiante
+
+        UI -> Ctrl: consultarCalificacion(idEstudiante)
+        activate Ctrl
+
+        Ctrl -> DB: consultarCalificacion(idEstudiante)
+        activate DB
+        return calificacion
+
+        alt Excepción 2: Estudiante inexistente
+
+            Ctrl --> UI: error: Estudiante inexistente
+            UI --> Actor: Mostrar mensaje "El estudiante seleccionado no existe"
+
+        else Estudiante existente
+
+            Ctrl --> UI: mostrarCalificacion(calificacion)
+            UI --> Actor: Visualizar calificación
+
+            == Fase 3: Modificación de la Nota ==
+
+            Actor -> UI: Modificar nota
+            Actor -> UI: Confirmar modificación
+
+            UI -> Ctrl: modificarCalificacion(datos)
+            
+            Ctrl -> Ctrl: validarNota(datos)
+
+            alt Excepción 3: Nota inválida
+
+                Ctrl --> UI: error: Nota inválida
+                UI --> Actor: Mostrar mensaje "La nota ingresada no es válida"
+
+            else Nota válida
+
+                == Fase 4: Actualización de la Calificación ==
+
+                Ctrl -> DB: actualizarCalificacion(datos)
+                activate DB
+
+                alt Excepción 4: Error de actualización
+
+                    DB --> Ctrl: error: No se pudo actualizar la calificación
+                    Ctrl --> UI: error: Error de actualización
+                    UI --> Actor: Mostrar mensaje "No se pudo actualizar la calificación"
+
+                else Actualización exitosa
+
+                    return actualizacionOK
+
+                    Ctrl --> UI: confirmarOperacion
+                    deactivate Ctrl
+
+                    UI --> Actor: El sistema confirma la operación: "La calificación fue actualizada correctamente"
+                    deactivate UI
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

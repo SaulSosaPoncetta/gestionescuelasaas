@@ -1,0 +1,125 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Sistema / Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "FinalesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "EstudianteFinalesService" as Service
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Identificación del Estudiante ==
+
+Actor -> UI: Consultar situación académica para final
+activate UI
+
+UI -> Service: consultarSituacionAcademica(estudiante, materia)
+activate Service
+
+== Verificación de Precondición ==
+
+Service -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Service --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Service -> DB: identificarEstudiante()
+    activate DB
+    return estudiante
+
+    == Fase 2: Consulta de Situación de Cursada ==
+
+    Service -> DB: consultarSituacionCursada(estudiante, materia)
+    activate DB
+
+    alt Excepción 1: No existe situación de cursada
+
+        DB --> Service: situación de cursada inexistente
+        Service --> UI: error: No existe situación de cursada
+        UI --> Actor: Mostrar mensaje "No existe una situación de cursada para la materia"
+
+    else Situación de cursada existente
+
+        return situacionCursada
+
+        == Fase 3: Verificación de Final Aprobado ==
+
+        Service -> DB: verificarFinalAprobado(estudiante, materia)
+        activate DB
+        return finalAprobado
+
+        alt Excepción 3: Materia ya aprobada
+
+            Service --> UI: error: Materia ya aprobada
+            UI --> Actor: Mostrar mensaje "La materia ya fue aprobada anteriormente"
+
+        else Materia no aprobada
+
+            == Fase 4: Verificación de Correlativas ==
+
+            Service -> DB: verificarCorrelativas(estudiante, materia)
+            activate DB
+            return correlativasCumplidas
+
+            alt Excepción 2: Correlativas no cumplidas
+
+                Service --> UI: error: Correlativas no cumplidas
+                UI --> Actor: Mostrar mensaje "No cumple con las correlativas requeridas"
+
+            else Correlativas cumplidas
+
+                == Fase 5: Verificación de Carrera ==
+
+                Service -> DB: verificarCarreraActiva(estudiante)
+                activate DB
+                return carreraActiva
+
+                alt Excepción 4: Carrera inactiva
+
+                    Service --> UI: error: Carrera inactiva
+                    UI --> Actor: Mostrar mensaje "El estudiante no posee una carrera activa"
+
+                else Carrera activa
+
+                    == Fase 6: Determinación de Habilitación ==
+
+                    Service -> Service: determinarSiPuedeRendir()
+                    Service --> UI: devolverResultado(habilitado)
+                    deactivate Service
+
+                    UI --> Actor: Mostrar resultado de habilitación o rechazo para rendir
+                    deactivate UI
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

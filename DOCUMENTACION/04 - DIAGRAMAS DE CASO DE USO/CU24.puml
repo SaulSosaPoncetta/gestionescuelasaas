@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-24: Modificar Materia" as CU24
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Existencia de la Materia\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Materia y Mostrar Datos" as Sec1
+    usecase "Modificar Información y Confirmar" as Sec2
+    usecase "Validar y Actualizar Materia" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Información de la Materia Actualizada\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Materia Inexistente" as Exc1
+    usecase "Exc 2: Datos Inválidos" as Exc2
+    usecase "Exc 3: Error de Actualización" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU24
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU24 ..> Precond : <<include>>
+    CU24 ..> Sec1 : <<include>>
+    CU24 ..> Sec2 : <<include>>
+    CU24 ..> Sec3 : <<include>>
+    CU24 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+}
+@enduml

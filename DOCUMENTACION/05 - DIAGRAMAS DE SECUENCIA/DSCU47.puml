@@ -1,0 +1,133 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "PlanEstudioUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "PlanEstudioController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Carrera ==
+
+Actor -> UI: Seleccionar carrera
+activate UI
+
+UI -> Ctrl: gestionarPlanEstudio(idCarrera)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> Session: verificarPermisosAdministrativos()
+    activate Session
+    return permisosValidos
+
+    == Fase 2: Gestión del Plan ==
+
+    Actor -> UI: Acceder a la gestión del plan
+    Actor -> UI: Ingresar los datos del plan
+    Actor -> UI: Seleccionar el archivo
+
+    UI -> Ctrl: registrarDocumentacion(datosPlan, archivo)
+    Ctrl -> Ctrl: validarArchivo(archivo)
+
+    alt Excepción 1: Archivo inexistente
+
+        Ctrl --> UI: error: Archivo inexistente
+        UI --> Actor: Mostrar mensaje "El archivo seleccionado no existe"
+
+    else Archivo disponible
+
+        alt Excepción 2: Formato no permitido
+
+            Ctrl --> UI: error: Formato no permitido
+            UI --> Actor: Mostrar mensaje "El formato del archivo no está permitido"
+
+        else Formato permitido
+
+            Ctrl -> DB: verificarCarrera(idCarrera)
+            activate DB
+            return carreraExiste
+
+            alt Excepción 3: Carrera inexistente
+
+                Ctrl --> UI: error: Carrera inexistente
+                UI --> Actor: Mostrar mensaje "La carrera seleccionada no existe"
+
+            else Carrera existente
+
+                Ctrl -> Ctrl: validarDatos(datosPlan)
+
+                alt Excepción 4: Datos inválidos
+
+                    Ctrl --> UI: error: Datos inválidos
+                    UI --> Actor: Mostrar mensaje "Los datos ingresados no son válidos"
+
+                else Datos válidos
+
+                    == Fase 3: Registro y Asociación ==
+
+                    Ctrl -> DB: registrarDocumentacion(datosPlan, archivo)
+                    activate DB
+
+                    alt Excepción 5: Error de almacenamiento
+
+                        DB --> Ctrl: error: Error de almacenamiento
+                        Ctrl --> UI: error: No se pudo registrar la documentación
+                        UI --> Actor: Mostrar mensaje "No se pudo almacenar la documentación"
+
+                    else Almacenamiento exitoso
+
+                        return documentacionRegistrada
+
+                        Ctrl -> DB: asociarPlanCarrera(datosPlan, idCarrera)
+                        activate DB
+                        return planAsociado
+
+                        == Fase 4: Confirmación ==
+
+                        Ctrl --> UI: confirmarOperacion
+                        deactivate Ctrl
+
+                        UI --> Actor: El sistema confirma la operación: "La documentación fue asociada al plan de estudio correctamente"
+                        deactivate UI
+
+                    end
+                end
+            end
+        end
+    end
+end
+
+@enduml

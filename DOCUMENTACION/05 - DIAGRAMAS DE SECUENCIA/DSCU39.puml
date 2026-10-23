@@ -1,0 +1,155 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "FinalesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "EstudianteFinalesService" as Service
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Mesa ==
+
+Actor -> UI: Consultar finales disponibles
+activate UI
+
+UI -> Service: consultarFinales()
+activate Service
+
+== Verificación de Precondición ==
+
+Service -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Service --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Actor -> UI: Seleccionar mesa
+    Actor -> UI: Solicitar inscripción
+
+    UI -> Service: inscribirseMesa(idMesa)
+    
+    == Fase 2: Identificación y Verificación del Estudiante ==
+
+    Service -> DB: identificarEstudiante()
+    activate DB
+    return estudiante
+
+    Service -> DB: verificarCarreraActiva(estudiante)
+    activate DB
+    return carreraActiva
+
+    alt Excepción 5: Estudiante sin carrera activa
+
+        Service --> UI: error: Estudiante sin carrera activa
+        UI --> Actor: Mostrar mensaje "El estudiante no posee una carrera activa"
+
+    else Carrera activa
+
+        == Fase 3: Verificación de Condiciones Académicas ==
+
+        Service -> DB: verificarSituacionCursada(estudiante, idMesa)
+        activate DB
+        return condicionAcademica
+
+        alt Excepción 6: Condición académica no cumplida
+
+            Service --> UI: error: Condición académica no cumplida
+            UI --> Actor: Mostrar mensaje "No cumple con la condición académica para rendir"
+
+        else Condición académica cumplida
+
+            Service -> DB: verificarMateriaAprobada(estudiante, idMesa)
+            activate DB
+            return materiaAprobada
+
+            alt Excepción 1: Materia ya aprobada
+
+                Service --> UI: error: Materia ya aprobada
+                UI --> Actor: Mostrar mensaje "La materia ya fue aprobada"
+
+            else Materia no aprobada
+
+                == Fase 4: Verificación de Correlativas ==
+
+                Service -> DB: verificarCorrelativas(estudiante, idMesa)
+                activate DB
+                return correlativasCumplidas
+
+                alt Excepción 2: Correlativas no cumplidas
+
+                    Service --> UI: error: Correlativas no cumplidas
+                    UI --> Actor: Mostrar mensaje "No cumple con las correlativas requeridas"
+
+                else Correlativas cumplidas
+
+                    == Fase 5: Verificación de Mesa e Inscripción ==
+
+                    Service -> DB: verificarMesaDisponible(idMesa)
+                    activate DB
+                    return mesaDisponible
+
+                    alt Excepción 4: Mesa no disponible
+
+                        Service --> UI: error: Mesa no disponible
+                        UI --> Actor: Mostrar mensaje "La mesa de examen no se encuentra disponible"
+
+                    else Mesa disponible
+
+                        Service -> DB: verificarInscripcionPrevia(estudiante, idMesa)
+                        activate DB
+                        return inscripcionExistente
+
+                        alt Excepción 3: Inscripción duplicada
+
+                            Service --> UI: error: Inscripción duplicada
+                            UI --> Actor: Mostrar mensaje "El estudiante ya se encuentra inscripto en la mesa"
+
+                        else No existe inscripción previa
+
+                            == Fase 6: Registro de Inscripción ==
+
+                            Service -> DB: registrarInscripcion(estudiante, idMesa)
+                            activate DB
+                            return inscripcionRegistrada
+
+                            Service --> UI: confirmarOperacion
+                            deactivate Service
+
+                            UI --> Actor: El sistema confirma la operación: "Inscripción a la mesa de examen realizada correctamente"
+                            deactivate UI
+
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+@enduml

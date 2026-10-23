@@ -1,0 +1,79 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-10 - Consultar Docentes
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de docentes;
+
+|Interfaz|
+:Solicitar listado de docentes;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Consultar docentes\nen la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    |Interfaz|
+    :Mostrar formulario y\nlistado general de docentes;
+    
+    |Administrador / Secretaría|
+    :Ingresa criterios de búsqueda / filtros;
+    
+    |Interfaz|
+    :Enviar criterios de búsqueda;
+    
+    |Sistema|
+    :Procesar filtros de búsqueda;
+    
+    if (§¿Existen coincidencias?) then (Si)
+      |Interfaz|
+      :Mostrar resultados filtrados;
+      
+      |Administrador / Secretaría|
+      if (§¿Desea seleccionar\nun docente?) then (Si)
+        :Selecciona un docente\ndel listado;
+        
+        |Interfaz|
+        :Mostrar detalle del docente;
+        
+        |Administrador / Secretaría|
+        :Visualizar detalle del docente;
+        stop
+      else (No)
+        stop
+      endif
+      
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen\ncoincidencias con la búsqueda;
+      
+      |Administrador / Secretaría|
+      :Visualizar pantalla sin resultados;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Administrador / Secretaría|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

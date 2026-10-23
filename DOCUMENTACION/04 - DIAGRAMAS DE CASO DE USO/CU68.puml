@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Alumno" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-68: Estudiante Consulta Materias para Matriculación" as CU68
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Alumno Autenticado y\nHabilitado para Matriculación (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Opción e Identificar Alumno" as Sec1
+    usecase "Consultar Materias, Verificar Condiciones y Determinar Selección" as Sec2
+    usecase "Mostrar Materias Disponibles al Alumno" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Listado de Materias Disponibles Obtenido\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2: Alumno no Cumple las Condiciones Requeridas" as Exc2
+    usecase "Exc 1: No Existen Materias Disponibles para Matricular" as Exc1
+    usecase "Exc 3: Error al Consultar las Materias" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU68
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU68 ..> Precond : <<include>>
+    CU68 ..> Sec1 : <<include>>
+    CU68 ..> Sec2 : <<include>>
+    CU68 ..> Sec3 : <<include>>
+    CU68 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

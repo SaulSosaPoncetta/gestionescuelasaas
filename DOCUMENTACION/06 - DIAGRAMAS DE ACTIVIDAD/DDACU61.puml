@@ -1,0 +1,46 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-61 - Docente Consulta Historial de Cursadas
+
+|Docente|
+start
+:Selecciona "Historial de Cursadas";
+
+|Interfaz|
+:Solicitar cursadas dictadas previamente;
+
+|Sistema|
+:Consultar comisiones y cursadas de períodos anteriores;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Existen cursadas pasadas?) then (Si)
+    :Cargar lista de materias, cuatrimestres y alumnos;
+
+    |Interfaz|
+    :Mostrar historial de cursadas dictadas;
+
+    |Docente|
+    :Visualizar el historial de cursadas;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje:\nNo se registra historial de cursadas anteriores;
+
+    |Docente|
+    :Visualizar mensaje;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error\nde lectura en la BD;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

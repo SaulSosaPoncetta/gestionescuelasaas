@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-08 - Modificar Administrador
+
+|Administrador / Secretaría|
+start
+:Selecciona un administrador\npara modificar;
+
+|Interfaz|
+:Solicitar datos del\nadministrador seleccionado;
+
+|Sistema|
+:Buscar administrador\nen la base de datos;
+
+if (§¿Administrador existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con los\ndatos del administrador;
+  
+  |Administrador / Secretaría|
+  :Modifica la información\ny confirma la operación;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar consistencia y\nformato de los datos;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Actualizar el registro\nen la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar datos\nactualizados;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nAdministrador inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado;
+  stop
+endif
+
+@enduml

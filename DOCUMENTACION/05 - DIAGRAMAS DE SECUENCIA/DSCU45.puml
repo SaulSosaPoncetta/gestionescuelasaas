@@ -1,0 +1,112 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "AuditoriaUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "AuditoriaController" as Ctrl
+    participant "SessionManager" as Session
+    participant "AuditoriaListener" as Listener
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso a Auditoría ==
+
+Actor -> UI: Acceder a Auditoría
+activate UI
+
+UI -> Ctrl: consultarAuditoria()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> Session: verificarPermisosAuditoria()
+    activate Session
+    return permisosValidos
+
+    alt Excepción 3: Usuario sin permisos
+
+        Ctrl --> UI: error: Usuario sin permisos
+        UI --> Actor: Mostrar mensaje "No posee permisos para acceder al módulo de Auditoría"
+
+    else Usuario autorizado
+
+        == Fase 2: Consulta de Registros ==
+
+        Ctrl -> DB: consultarRegistrosAuditoria()
+        activate DB
+
+        alt Excepción 1: No existen registros
+
+            DB --> Ctrl: no existen registros
+            Ctrl --> UI: error: No existen registros
+            UI --> Actor: Mostrar mensaje "No existen registros de auditoría"
+
+        else Existen registros
+
+            return registrosAuditoria
+
+            Ctrl --> UI: mostrarRegistros(registrosAuditoria)
+            UI --> Actor: Mostrar registros de auditoría
+
+            == Fase 3: Consulta de Operaciones ==
+
+            Actor -> UI: Consultar operaciones
+
+            UI -> Ctrl: consultarOperaciones()
+            
+            Ctrl -> DB: consultarOperacionesAuditoria()
+            activate DB
+
+            alt Excepción 2: Error de consulta
+
+                DB --> Ctrl: error: Error de consulta
+                Ctrl --> UI: error: No se pudo realizar la consulta
+                UI --> Actor: Mostrar mensaje "No se pudo consultar la información de auditoría"
+
+            else Consulta exitosa
+
+                return operaciones
+
+                Ctrl --> UI: mostrarOperaciones(operaciones)
+                UI --> Actor: Analizar usuario, operación, categoría y fecha
+
+                deactivate Ctrl
+                deactivate UI
+
+            end
+        end
+    end
+end
+
+@enduml

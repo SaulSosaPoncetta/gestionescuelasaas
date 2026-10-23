@@ -1,0 +1,73 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-78 - Estudiante Actualiza sus Datos Personales
+
+|Estudiante|
+start
+:Accede al formulario de edición de perfil;
+
+|Interfaz|
+:Cargar y mostrar datos personales actuales;
+
+repeat
+  |Estudiante|
+  :Ingresar o modificar datos personales (email, teléfono, domicilio);
+  :Confirmar guardado de datos;
+
+  |Interfaz|
+  :Enviar datos modificados;
+
+  |Sistema|
+  :Validar presencia de campos obligatorios;
+
+  if (§¿Campos obligatorios completos?) then (Si)
+    :Validar formato de datos ingresados;
+
+    if (§¿Formato de datos válido?) then (Si)
+      :Verificar existencia del registro en la base de datos;
+
+      if (§¿Existe el registro del alumno?) then (Si)
+        :Persistir cambios en la base de datos;
+
+        if (§¿Actualización exitosa?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de éxito:\nDatos actualizados con éxito;
+
+          |Estudiante|
+          :Visualizar confirmación de guardado;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nError durante la actualización en BD;
+
+          |Estudiante|
+          :Visualizar mensaje de error;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nEl registro del alumno no existe;
+
+        |Estudiante|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFormato de datos no válido (e.g., e-mail o teléfono incorrecto);
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nCampos obligatorios incompletos;
+  endif
+
+  |Estudiante|
+repeat while (§¿Desea corregir los datos?) is (Si)
+stop
+@enduml

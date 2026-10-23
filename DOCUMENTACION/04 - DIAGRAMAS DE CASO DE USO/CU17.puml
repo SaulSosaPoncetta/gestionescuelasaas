@@ -1,0 +1,40 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-17: Activar/Desactivar Estudiante" as CU17
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Existencia del Estudiante\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Estudiante y Solicitar Cambio de Estado" as Sec1
+    usecase "Modificar Estado en Sistema" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Estado Actualizado (Activo/Inactivo)\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Estudiante Inexistente" as Exc1
+    usecase "Exc 2: Error de Actualización" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU17
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU17 ..> Precond : <<include>>
+    CU17 ..> Sec1 : <<include>>
+    CU17 ..> Sec2 : <<include>>
+    CU17 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+}
+@enduml

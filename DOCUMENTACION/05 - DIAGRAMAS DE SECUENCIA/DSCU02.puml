@@ -1,0 +1,66 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario Autenticado" as Actor
+box "Capa de Presentación" 
+    participant "MainUI (Dashboard)" as UI
+    participant "LoginUI (Inicio)" as LoginUI
+end box
+box "Capa de Negocio" 
+    participant "LoginController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Seleccionar opción "Cerrar sesión"
+activate UI
+
+UI -> Ctrl: procesarCierreSesion()
+activate Ctrl
+
+== Invalidación de la Sesión ==
+
+Ctrl -> Session: obtenerSesionActiva()
+activate Session
+return datosSesion
+
+Ctrl -> Session: invalidarSesion(datosSesion.token)
+activate Session
+
+alt Excepción 1: Error durante la invalidación de la sesión
+    Session --> Ctrl: SessionException (Error al destruir sesión/token)
+    Ctrl --> UI: error: No se pudo cerrar la sesión de forma segura
+    UI --> Actor: Mostrar mensaje "Error al cerrar sesión, intente nuevamente"
+else Invalidación exitosa
+    return confirmaciónInvalidación
+    
+    Ctrl -> Session: eliminarInformaciónAutenticación()
+    activate Session
+    deactivate Session
+    
+    Ctrl --> UI: cierreSesionExitoso
+    deactivate Ctrl
+    
+    == Redirección del Sistema ==
+    
+    UI -> LoginUI: redirigirAPantallaInicio()
+    activate LoginUI
+    deactivate UI
+    
+    LoginUI --> Actor: Mostrar pantalla de Login vacía (Sesión Finalizada)
+    deactivate LoginUI
+end
+
+@enduml

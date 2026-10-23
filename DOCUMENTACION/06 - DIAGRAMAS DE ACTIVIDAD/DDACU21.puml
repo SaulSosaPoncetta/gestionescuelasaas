@@ -1,0 +1,95 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-21 - Gestionar Plan de Estudio
+
+|Administrador / Secretaría / Estudiante|
+start
+:Accede al módulo de planes de estudio;
+
+|Interfaz|
+:Solicitar listado de planes;
+
+|Sistema|
+:Verificar existencia de la carrera\ny recuperar planes asociados;
+
+if (§¿Carrera existe?) then (Si)
+  |Interfaz|
+  :Mostrar planes de estudio existentes;
+  
+  |Administrador / Secretaría / Estudiante|
+  if (§¿Desea registrar un nuevo plan?) then (Si (Admin/Secretaría))
+    :Selecciona "Agregar";
+    
+    |Interfaz|
+    :Mostrar formulario de registro de plan;
+    
+    |Administrador / Secretaría / Estudiante|
+    :Ingresa título, descripción, resolución,\ncarrera, horas y fecha;
+    :Adjunta la documentación del plan;
+    
+    |Interfaz|
+    :Enviar datos y archivo adjunto;
+    
+    |Sistema|
+    :Validar permisos del actor,\ndatos obligatorios y formato de archivo;
+    
+    if (§¿Permisos, campos y\narchivo son válidos?) then (Si)
+      :Verificar unicidad del plan;
+      
+      if (§¿Plan es único?) then (Si)
+        :Registrar plan de estudio y\nalmacenar archivo adjunto;
+        :Asociar plan con la carrera;
+        
+        if (§¿Almacenamiento exitoso?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de\nconfirmación de éxito;
+          
+          |Administrador / Secretaría / Estudiante|
+          :Visualizar el nuevo plan\nregistrado y asociado;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nError de almacenamiento;
+          
+          |Administrador / Secretaría / Estudiante|
+          :Reintentar o cancelar;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar error: Plan de estudio duplicado;
+        
+        |Administrador / Secretaría / Estudiante|
+        :Corregir los datos del plan;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar error: Datos incompletos,\narchivo inválido o sin permisos;
+      
+      |Administrador / Secretaría / Estudiante|
+      :Completar o corregir formulario;
+      stop
+    endif
+
+  else (No (Solo consulta))
+    |Administrador / Secretaría / Estudiante|
+    :Consultar información de los planes;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nCarrera inexistente;
+  
+  |Administrador / Secretaría / Estudiante|
+  :Regresar al módulo de carreras;
+  stop
+endif
+
+@enduml

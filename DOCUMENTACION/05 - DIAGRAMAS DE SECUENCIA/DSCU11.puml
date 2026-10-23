@@ -1,0 +1,114 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "DocenteRegistroUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "DocenteController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Despliegue del Formulario ==
+
+Actor -> UI: Seleccionar "Agregar docente"
+activate UI
+
+UI -> Ctrl: prepararFormularioAlta()
+activate Ctrl
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl --> UI: mostrarFormularioVacio()
+deactivate Ctrl
+UI --> Actor: El sistema muestra el formulario de registro de docente
+deactivate UI
+
+== Fase 2: Envío de Datos y Persistencia Transaccional ==
+
+Actor -> UI: Ingresar datos requeridos y confirmar
+activate UI
+
+alt Excepción 2: Datos incompletos
+    UI --> Actor: Mostrar advertencia "Complete todos los campos obligatorios"
+else Formulario completo
+    UI -> Ctrl: registrarDocente(datosDocente)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosDocente)
+    
+    alt Excepción 3: Datos inválidos (E-mail mal formado, teléfono inválido, etc.)
+        Ctrl --> UI: error: Datos inválidos
+        UI --> Actor: Mostrar campos con errores para su corrección
+    else Formatos válidos
+        
+        == Inicio de Transacción Atómica ==
+        Ctrl -> DB: iniciarTransaccion()
+        activate DB
+        deactivate DB
+        
+        Ctrl -> DB: verificarDniExistente(datosDocente.dni)
+        activate DB
+        return dniExiste
+        
+        alt Excepción 1: DNI duplicado
+            Ctrl -> DB: rollback()
+            activate DB
+            deactivate DB
+            Ctrl --> UI: error: DNI ya registrado
+            UI --> Actor: Mostrar mensaje "El DNI ingresado ya pertenece a un docente registrado"
+            
+        else DNI único
+            
+            Ctrl -> DB: crearUsuarioDocente(datosDocente.credenciales)
+            activate DB
+            return usuarioId
+            
+            Ctrl -> DB: asignarRol(usuarioId, "DOCENTE")
+            activate DB
+            deactivate DB
+            
+            Ctrl -> DB: guardarInformacionDocente(usuarioId, datosDocente.perfil)
+            activate DB
+            
+            alt Excepción 4: Error de base de datos (Fallo en la transacción)
+                DB --> Ctrl: error: SQLException / ConnectionTimeout
+                Ctrl -> DB: rollback()
+                activate DB
+                deactivate DB
+                Ctrl --> UI: error: No se pudo completar el registro
+                UI --> Actor: Mostrar mensaje "Error interno en el sistema de datos, intente de nuevo"
+            else Escritura exitosa
+                return confirmacionOK
+                
+                Ctrl -> DB: commitTransaccion()
+                activate DB
+                deactivate DB
+                
+                Ctrl --> UI: registroDocenteExitoso
+                deactivate Ctrl
+                UI --> Actor: El sistema confirma la operación: "El docente queda registrado"
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml

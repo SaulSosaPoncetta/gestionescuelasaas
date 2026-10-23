@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría / Estudiante" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-21: Gestionar Plan de Estudio" as CU21
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Carrera y Permisos Administrativos\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Módulo y Consultar Planes Existentes" as Sec1
+    usecase "Solicitar Alta e Ingresar Datos del Plan" as Sec2
+    usecase "Adjuntar Documentación Obligatoria" as Sec3
+    usecase "Validar Datos, Registrar Plan y Asociar a Carrera" as Sec4
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Plan Registrado y Asociado a la Carrera\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Carrera Inexistente" as Exc1
+    usecase "Exc 3: Datos Incompletos" as Exc3
+    usecase "Exc 2: Archivo Inválido" as Exc2
+    usecase "Exc 4: Plan Duplicado" as Exc4
+    usecase "Exc 5: Error de Almacenamiento" as Exc5
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU21
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU21 ..> Precond : <<include>>
+    CU21 ..> Sec1 : <<include>>
+    CU21 ..> Sec2 : <<include>>
+    CU21 ..> Sec3 : <<include>>
+    CU21 ..> Sec4 : <<include>>
+    CU21 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec4 : <<extend>>
+    Exc5 ..> Sec4 : <<extend>>
+}
+@enduml

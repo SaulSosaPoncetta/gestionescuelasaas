@@ -1,0 +1,109 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "EstudiantesCarreraUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "EstudiantesCarreraController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección de Carrera ==
+
+Actor -> UI: Seleccionar una carrera
+activate UI
+
+UI -> Ctrl: consultarEstudiantesCarrera(idCarrera)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Consulta de Estudiantes ==
+
+    Ctrl -> DB: consultarEstudiantes(idCarrera)
+    activate DB
+
+    alt Excepción 1: Carrera inexistente
+
+        DB --> Ctrl: carrera inexistente
+        Ctrl --> UI: error: Carrera inexistente
+        UI --> Actor: Mostrar mensaje "La carrera seleccionada no existe"
+
+    else Carrera existente
+
+        alt Excepción 2: No existen estudiantes
+
+            DB --> Ctrl: no existen estudiantes
+            Ctrl --> UI: error: No existen estudiantes
+            UI --> Actor: Mostrar mensaje "No existen estudiantes asociados a la carrera"
+
+        else Existen estudiantes
+
+            return estudiantes
+
+            Ctrl --> UI: mostrarEstudiantes(estudiantes)
+            UI --> Actor: Mostrar estudiantes correspondientes
+
+            == Fase 3: Aplicación de Filtros ==
+
+            Actor -> UI: Seleccionar materia
+            Actor -> UI: Seleccionar año
+
+            UI -> Ctrl: aplicarFiltros(materia, año)
+
+            Ctrl -> DB: consultarEstudiantesFiltrados(idCarrera, materia, año)
+            activate DB
+
+            alt Excepción 3: No existen coincidencias
+
+                DB --> Ctrl: no existen coincidencias
+                Ctrl --> UI: error: No existen coincidencias
+                UI --> Actor: Mostrar mensaje "No se encontraron estudiantes que coincidan con los filtros"
+
+            else Existen coincidencias
+
+                return estudiantesFiltrados
+
+                Ctrl --> UI: mostrarEstudiantes(estudiantesFiltrados)
+                deactivate Ctrl
+
+                UI --> Actor: Mostrar estudiantes correspondientes
+                deactivate UI
+
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaLogin" as Vista
+control "AuthControlador" as Ctrl
+entity "UsuarioService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-65: Estudiante Inicia Sesión
+
+Alumno -> Vista : Acceder a la pantalla de inicio de sesión
+activate Vista
+Vista --> Alumno : Solicitar usuario y contraseña
+deactivate Vista
+
+Alumno -> Vista : Ingresar credenciales
+activate Vista
+Vista -> Ctrl : iniciarSesion(usuario, password)
+activate Ctrl
+
+Ctrl -> Service : validarCredenciales(usuario, password)
+activate Service
+Service -> BD : buscarUsuario(usuario)
+activate BD
+BD --> Service : DatosUsuario / null
+deactivate BD
+
+alt Excepción 2: El usuario no se encuentra registrado
+    Service --> Ctrl : Error("Usuario no existente")
+    Ctrl --> Vista : Mostrar error de usuario
+    Vista --> Alumno : Informar usuario no registrado
+else Excepción 1: Credenciales incorrectas
+    Service --> Ctrl : Error("Contraseña inválida")
+    Ctrl --> Vista : Mostrar error de contraseña
+    Vista --> Alumno : Informar credenciales incorrectas
+else Excepción 4: Error durante la autenticación
+    Service --> Ctrl : Error("Error del sistema de autenticación")
+    Ctrl --> Vista : Mostrar mensaje de error del sistema
+    Vista --> Alumno : Informar fallo de sistema
+else Autenticación Válida
+    Service --> Ctrl : UsuarioAutenticado(rol)
+    deactivate Service
+    
+    Ctrl -> Ctrl : verificarRol(usuario, "Alumno")
+    
+    alt Excepción 3: El usuario no posee el rol requerido
+        Ctrl --> Vista : Mostrar mensaje ("Sin permisos de alumno")
+        Vista --> Alumno : Informar falta de rol adecuado
+    else Rol Alumno Confirmado (Secuencia Normal)
+        Ctrl --> Vista : Redirigir a Panel Inicio Alumno
+        deactivate Ctrl
+        Vista --> Alumno : Mostrar panel de estudiante
+        deactivate Vista
+    end
+end
+
+@enduml

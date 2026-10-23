@@ -1,0 +1,96 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario Autenticado" as Actor
+box "Capa de Presentación" 
+    participant "PerfilUI (Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "PerfilController" as Ctrl
+    participant "SessionManager" as Session
+    participant "EstudianteService" as EstServ
+    participant "UsuarioService" as UsrServ
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Acceder a la opción "Mis datos"
+activate UI
+
+UI -> Ctrl: obtenerDatosPerfil()
+activate Ctrl
+
+== Verificación de Seguridad (Precondición) ==
+
+Ctrl -> Session: obtenerTokenSesionActiva()
+activate Session
+return token
+
+alt Excepción 1: Usuario no autenticado (Token inválido/expirado)
+    Ctrl --> UI: error: No autenticado
+    UI --> Actor: Redirigir a pantalla de Login con mensaje de sesión vencida
+else Usuario autenticado con éxito
+    
+    == Identificación y Recuperación de Datos ==
+    
+    Ctrl -> Session: obtenerRolUsuario(token)
+    activate Session
+    return rolUsuario
+    
+    alt Caso A: El usuario tiene rol "Estudiante"
+        Ctrl -> EstServ: recuperarPerfilEstudiante(token)
+        activate EstServ
+        
+        EstServ -> DB: buscarEstudianteConDetalleAcademico()
+        activate DB
+        return datosEstudiante
+        
+        alt Excepción 2: Datos de usuario inexistentes (Error de integridad)
+            EstServ --> Ctrl: registroNoEncontrado
+            Ctrl --> UI: error: Perfil no encontrado
+            UI --> Actor: Mostrar mensaje "Error al cargar el perfil institucional"
+        else Perfil recuperado
+            EstServ --> Ctrl: datosEstudiante
+            deactivate EstServ
+            Ctrl --> UI: renderizarPerfil(datosEstudiante)
+            UI --> Actor: Mostrar información personal y académica del alumno
+        end
+        
+    else Caso B: El usuario tiene rol General (Admin / Secretaría / Docente)
+        Ctrl -> UsrServ: recuperarPerfilGeneral(token)
+        activate UsrServ
+        
+        UsrServ -> DB: buscarUsuarioPorId()
+        activate DB
+        return datosUsuario
+        
+        alt Excepción 2: Datos de usuario inexistentes
+            UsrServ --> Ctrl: registroNoEncontrado
+            Ctrl --> UI: error: Perfil no encontrado
+            UI --> Actor: Mostrar mensaje "Error al cargar los datos de usuario"
+        else Perfil recuperado
+            UsrServ --> Ctrl: datosUsuario
+            deactivate UsrServ
+            Ctrl --> UI: renderizarPerfil(datosUsuario)
+            deactivate Ctrl
+            UI --> Actor: Mostrar información del perfil general
+            deactivate UI
+        end
+    end
+end
+
+@enduml

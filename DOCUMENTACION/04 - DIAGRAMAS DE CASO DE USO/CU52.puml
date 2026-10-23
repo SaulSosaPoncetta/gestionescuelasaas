@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Docente" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-52: Docente Consulta Sus Datos" as CU52
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Docente Autenticado y\nExistencia de Usuario Docente (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Opción de Datos e Identificar Usuario" as Sec1
+    usecase "Obtener Información Correspondiente" as Sec2
+    usecase "Presentar Datos del Docente" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Datos del Docente Mostrados Correctamente\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2: El Usuario no Corresponde a un Docente" as Exc2
+    usecase "Exc 1: No Existe Información Asociada" as Exc1
+    usecase "Exc 3: Error al Obtener los Datos" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU52
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU52 ..> Precond : <<include>>
+    CU52 ..> Sec1 : <<include>>
+    CU52 ..> Sec2 : <<include>>
+    CU52 ..> Sec3 : <<include>>
+    CU52 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

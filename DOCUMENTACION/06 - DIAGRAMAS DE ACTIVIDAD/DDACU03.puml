@@ -1,0 +1,99 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-03 - Recuperar Contraseña
+
+|Usuario|
+start
+:Selecciona "Olvidé mi contraseña";
+
+|Interfaz|
+:Mostrar formulario de\nsolicitud de recuperación;
+
+|Usuario|
+:Ingresa su correo electrónico;
+
+|Interfaz|
+:Enviar correo al sistema;
+
+|Sistema|
+:Verifica existencia de la cuenta;
+
+if (§¿Existe la cuenta?) then (Si)
+  :Generar token de recuperación;
+  :Intentar enviar correo con enlace;
+  
+  if (§¿Correo enviado con éxito?) then (Si)
+    |Interfaz|
+    :Mostrar mensaje de correo enviado;
+    
+    |Usuario|
+    :Recibe correo y accede al enlace;
+    
+    |Interfaz|
+    :Enviar token al sistema;
+    
+    |Sistema|
+    :Validar token;
+    
+    if (§¿Token válido y vigente?) then (Si)
+      |Interfaz|
+      :Mostrar formulario de\nnueva contraseña;
+      
+      |Usuario|
+      :Ingresa nueva contraseña;
+      
+      |Interfaz|
+      :Enviar nueva contraseña;
+      
+      |Sistema|
+      :Validar reglas de contraseña;
+      
+      if (§¿Contraseña válida?) then (Si)
+        :Actualizar contraseña\nen base de datos;
+        
+        |Interfaz|
+        :Mostrar mensaje de éxito;
+        
+        |Usuario|
+        :Visualizar confirmación\ny acceder al login;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar error: contraseña\nno cumple los requisitos;
+        
+        |Usuario|
+        :Reintentar o cancelar;
+        stop
+      endif
+      
+    else (No)
+      |Interfaz|
+      :Mostrar error: Token inválido\no expirado;
+      
+      |Usuario|
+      :Revisar enlace o reintentar;
+      stop
+    endif
+    
+  else (No)
+    |Interfaz|
+    :Mostrar error de envío\nde correo electrónico;
+    
+    |Usuario|
+    :Reintentar más tarde;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Correo no registrado;
+  
+  |Usuario|
+  :Verificar correo digitado;
+  stop
+endif
+
+@enduml

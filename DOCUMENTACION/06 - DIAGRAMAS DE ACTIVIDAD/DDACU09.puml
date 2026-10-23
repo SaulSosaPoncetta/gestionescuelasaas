@@ -1,0 +1,48 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-09 - Activar/Desactivar Administrador
+
+|Administrador / Secretaría|
+start
+:Selecciona un administrador;
+:Solicita modificar su estado\n(Activar / Desactivar);
+
+|Interfaz|
+:Enviar solicitud de cambio\nde estado del administrador;
+
+|Sistema|
+:Buscar administrador\nen la base de datos;
+
+if (§¿Administrador existe?) then (Si)
+  :Cambiar el estado del usuario\n(Activo / Inactivo);
+  :Guardar cambios en la\nbase de datos;
+  
+  if (§¿Actualización exitosa?) then (Si)
+    |Interfaz|
+    :Mostrar mensaje de confirmación\nde cambio de estado;
+    
+    |Administrador / Secretaría|
+    :Visualizar el nuevo estado\ndel administrador;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nFalla al actualizar el estado;
+    
+    |Administrador / Secretaría|
+    :Reintentar o cancelar;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nAdministrador inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de\nadministradores;
+  stop
+endif
+
+@enduml

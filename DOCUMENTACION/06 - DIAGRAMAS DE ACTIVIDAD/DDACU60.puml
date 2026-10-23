@@ -1,0 +1,46 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-60 - Docente Consulta Historial de Finales
+
+|Docente|
+start
+:Accede a "Historial de Finales";
+
+|Interfaz|
+:Solicitar historial de mesas evaluadas;
+
+|Sistema|
+:Consultar registros de mesas de examen anteriores;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Existen registros históricos?) then (Si)
+    :Cargar actas de exámenes pasados y fechas;
+
+    |Interfaz|
+    :Mostrar el historial de finales;
+
+    |Docente|
+    :Visualizar el historial de finales;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje:\nSin historial de finales disponible;
+
+    |Docente|
+    :Visualizar mensaje;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error\nde consulta en la BD;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

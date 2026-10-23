@@ -1,0 +1,65 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-07 - Registrar Administrador
+
+|Administrador / Secretaría|
+start
+:Selecciona "Agregar administrador";
+
+|Interfaz|
+:Mostrar formulario de registro;
+
+|Administrador / Secretaría|
+:Ingresa datos personales\ny datos de acceso;
+
+|Interfaz|
+:Enviar datos ingresados;
+
+|Sistema|
+:Verificar campos obligatorios\ny formato de datos;
+
+if (§¿Campos completos\ny datos válidos?) then (Si)
+  :Verificar unicidad de DNI\ny nombre de usuario;
+  
+  if (§¿DNI y Usuario son únicos?) then (Si)
+    :Crear usuario y asignarle\nel rol correspondiente;
+    :Registrar administrador\nen la base de datos;
+    
+    if (§¿Transacción exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar nuevo administrador\nen el sistema;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla en la transacción;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error: DNI o\nUsuario ya registrado;
+    
+    |Administrador / Secretaría|
+    :Corregir datos duplicados;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Datos obligatorios\nincompletos o inválidos;
+  
+  |Administrador / Secretaría|
+  :Completar o corregir formulario;
+  stop
+endif
+
+@enduml

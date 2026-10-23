@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaPlanEstudio" as Vista
+control "PlanEstudioController" as Ctrl
+entity "PlanEstudioService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-74: Estudiante Consulta Plan de Estudio
+
+Alumno -> Vista : Acceder a la consulta del plan de estudio
+activate Vista
+Vista -> Ctrl : show()
+activate Ctrl
+
+Ctrl -> Service : obtenerPlanEstudioAlumno(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarPlanYMaterias(idAlumno)
+activate BD
+BD --> Service : DatosPlan / null
+deactivate BD
+
+alt Excepción 1: No existe un plan de estudio asociado
+    Service --> Ctrl : Error("El alumno no tiene un plan asociado")
+    Ctrl --> Vista : Mostrar mensaje ("Sin plan asociado")
+    Vista --> Alumno : Informar ausencia de plan
+else Excepción 2: El plan de estudio no se encuentra disponible
+    Service --> Ctrl : Error("Plan de estudio inactivo o no disponible")
+    Ctrl --> Vista : Mostrar advertencia
+    Vista --> Alumno : Informar indisponibilidad del plan
+else Excepción 3: Se produce un error al recuperar la información
+    Service --> Ctrl : Error("Error en servidor/BD")
+    Ctrl --> Vista : Mostrar mensaje de error de sistema
+    Vista --> Alumno : Informar fallo en la recuperación
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : DatosPlanYMaterias
+    deactivate Service
+    Ctrl --> Vista : PresentarPlanEstudio(DatosPlanYMaterias)
+    deactivate Ctrl
+    Vista --> Alumno : Mostrar estructura y materias del plan de estudio
+    deactivate Vista
+end
+
+@enduml

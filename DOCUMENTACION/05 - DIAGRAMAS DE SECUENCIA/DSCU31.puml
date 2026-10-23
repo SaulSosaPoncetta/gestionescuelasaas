@@ -1,0 +1,171 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario" as Actor
+
+box "Capa de Presentación"
+    participant "MesaExamenUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio"
+    participant "MesaExamenController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos"
+    participant "MesaExamen\n(Modelo)" as Model
+    database "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso al módulo de finales ==
+
+Actor -> UI: Acceder al módulo de finales
+activate UI
+
+UI -> Ctrl: consultarMesas()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Redirigir al inicio de sesión
+
+else Sesión válida
+
+    == Fase 2: Recuperación de mesas ==
+
+    Ctrl -> Model: obtenerMesasDisponibles()
+    activate Model
+
+    Model -> DB: consultarMesasDisponibles()
+    activate DB
+
+    alt Error de consulta
+
+        DB --> Model: error: SQLException / ConnectionTimeout
+        Model --> Ctrl: errorConsulta
+        Ctrl --> UI: error: No se pudieron recuperar las mesas
+        UI --> Actor: Mostrar mensaje "Error al consultar las mesas de examen"
+
+    else Consulta exitosa
+
+        DB --> Model: listaMesas
+        deactivate DB
+
+        Model --> Ctrl: listaMesas
+        deactivate Model
+
+        alt No existen mesas
+
+            Ctrl --> UI: listaMesasVacia
+            UI --> Actor: Mostrar mensaje "No existen mesas de examen disponibles"
+
+        else Existen mesas
+
+            Ctrl --> UI: mostrarMesas(listaMesas)
+            UI --> Actor: Mostrar listado de mesas disponibles
+
+            == Fase 3: Aplicación de filtros ==
+
+            Actor -> UI: Seleccionar criterios de búsqueda
+            Actor -> UI: Ingresar filtros
+
+            UI -> Ctrl: filtrarMesas(criterios)
+            activate Ctrl
+
+            Ctrl -> Ctrl: validarCriterios(criterios)
+
+            Ctrl -> Model: buscarMesas(criterios)
+            activate Model
+
+            Model -> DB: consultarMesasConFiltros(criterios)
+            activate DB
+
+            alt Error de consulta con filtros
+
+                DB --> Model: error: SQLException / ConnectionTimeout
+                Model --> Ctrl: errorConsulta
+                Ctrl --> UI: error: No se pudo aplicar el filtro
+                UI --> Actor: Mostrar mensaje "Error al realizar la búsqueda"
+
+            else Consulta con filtros exitosa
+
+                DB --> Model: resultadosFiltrados
+                deactivate DB
+
+                Model --> Ctrl: resultadosFiltrados
+                deactivate Model
+
+                alt No existen resultados para los filtros
+
+                    Ctrl --> UI: resultadosVacios
+                    UI --> Actor: Mostrar mensaje "No existen mesas para los criterios seleccionados"
+
+                else Existen resultados
+
+                    Ctrl --> UI: mostrarResultados(resultadosFiltrados)
+                    UI --> Actor: Mostrar mesas encontradas
+
+                    == Fase 4: Consulta del detalle ==
+
+                    Actor -> UI: Seleccionar una mesa
+                    UI -> Ctrl: consultarDetalleMesa(idMesa)
+                    activate Ctrl
+
+                    Ctrl -> Model: obtenerDetalleMesa(idMesa)
+                    activate Model
+
+                    Model -> DB: consultarDetalleMesa(idMesa)
+                    activate DB
+
+                    alt Error al consultar detalle
+
+                        DB --> Model: error: SQLException
+                        Model --> Ctrl: errorConsulta
+                        Ctrl --> UI: error: No se pudo obtener el detalle
+                        UI --> Actor: Mostrar mensaje "Error al consultar el detalle de la mesa"
+
+                    else Detalle encontrado
+
+                        DB --> Model: detalleMesa
+                        deactivate DB
+
+                        Model --> Ctrl: detalleMesa
+                        deactivate Model
+
+                        Ctrl --> UI: mostrarDetalle(detalleMesa)
+                        deactivate Ctrl
+                        UI --> Actor: Mostrar detalle de la mesa
+
+                    end
+
+                end
+            end
+
+            deactivate Ctrl
+
+        end
+    end
+end
+
+deactivate UI
+
+@enduml

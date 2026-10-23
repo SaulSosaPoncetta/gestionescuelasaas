@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-58 - Docente Restaura Alumno a Cursando
+
+|Docente|
+start
+:Selecciona un alumno reprobado y solicita "Restaurar a Cursando";
+
+|Interfaz|
+:Solicitar restauración de estado del alumno;
+
+|Sistema|
+:Verificar existencia del alumno y la materia;
+
+if (§¿Alumno y materia existen?) then (Si)
+  :Verificar registro de inscripción previa;
+
+  if (§¿Inscripción previa existe?) then (Si)
+    :Cambiar estado de la cursada a "Cursando";
+
+    if (§¿Actualización en BD exitosa?) then (Si)
+      |Interfaz|
+      :Actualizar planilla y mostrar mensaje:\nAlumno restaurado a Cursando;
+
+      |Docente|
+      :Visualizar planilla actualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error\nde actualización en BD;
+
+      |Docente|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nNo hay registro de inscripción para restaurar;
+
+    |Docente|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nEntidad no encontrada;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

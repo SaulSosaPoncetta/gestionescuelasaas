@@ -1,0 +1,82 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "CarreraGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "CarreraController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección y Carga de Información Existente ==
+
+Actor -> UI: Seleccionar una carrera del listado
+activate UI
+
+UI -> Ctrl: obtenerDatosParaModificacion(carreraId)
+activate Ctrl
+
+Ctrl -> DB: buscarCarreraPorId(carreraId)
+activate DB
+
+alt Excepción 1: Carrera inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Carrera no existe
+    UI --> Actor: Mostrar mensaje "La carrera seleccionada no existe en el sistema"
+else Carrera encontrada con éxito
+    return datosCarrera
+    
+    Ctrl --> UI: mostrarFormularioEdicion(datosCarrera)
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra el formulario con los datos cargados
+    deactivate UI
+
+    == Fase 2: Modificación, Validación y Actualización ==
+
+    Actor -> UI: Modificar la información y confirmar la operación
+    activate UI
+    
+    UI -> Ctrl: actualizarCarrera(carreraId, nuevosDatos)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarNuevosDatos(nuevosDatos)
+    
+    alt Excepción 2: Datos inválidos
+        Ctrl --> UI: error: Datos no válidos según reglas de negocio
+        UI --> Actor: Mostrar campos con error y solicitar su corrección
+    else Datos válidos
+        
+        Ctrl -> DB: modificarRegistroCarrera(carreraId, nuevosDatos)
+        activate DB
+        
+        alt Excepción 3: Error de actualización
+            DB --> Ctrl: error: Fallo de persistencia / Conexión
+            Ctrl --> UI: error: No se pudo guardar la información
+            UI --> Actor: Mostrar mensaje "Error interno al actualizar la carrera, intente de nuevo"
+        else Actualización exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: modificacionCarreraExitosa
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Carrera actualizada"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

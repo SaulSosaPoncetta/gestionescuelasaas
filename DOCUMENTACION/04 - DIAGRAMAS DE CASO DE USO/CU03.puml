@@ -1,0 +1,48 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actor (Cualquier Usuario no autenticado)
+actor "Usuario" as User
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-03: Recuperar Contraseña" as CU03
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Cuenta y Correo Asociado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Solicitar Recuperación e Ingresar Correo" as Sec1
+    usecase "Generar Token y Enviar Correo" as Sec2
+    usecase "Ingresar Nueva Contraseña" as Sec3
+    usecase "Validar y Actualizar Contraseña" as Sec4
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Contraseña Actualizada en Sistema\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Correo Inexistente" as Exc1
+    usecase "Exc 5: Error de Envío de Correo" as Exc5
+    usecase "Exc 2 y 3: Token Inválido / Vencido" as Exc2
+    usecase "Exc 4: Contraseña No Cumple Reglas" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    User --> CU03
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU03 ..> Precond : <<include>>
+    CU03 ..> Sec1 : <<include>>
+    CU03 ..> Sec2 : <<include>>
+    CU03 ..> Sec3 : <<include>>
+    CU03 ..> Sec4 : <<include>>
+    CU03 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones que interrumpen pasos específicos)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc5 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec4 : <<extend>>
+}
+@enduml

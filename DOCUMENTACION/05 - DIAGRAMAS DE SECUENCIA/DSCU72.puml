@@ -1,0 +1,77 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaInscripcionFinal" as Vista
+control "EstudianteFinalesController" as Ctrl
+entity "EstudianteFinalesService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-72: Estudiante se Inscribe a una Mesa de Examen
+
+Alumno -> Vista : Acceder a opción de inscripción a finales
+activate Vista
+Vista -> Ctrl : obtenerMesasParaInscripcion()
+activate Ctrl
+Ctrl --> Vista : Mostrar materias y mesas
+deactivate Ctrl
+
+Alumno -> Vista : Seleccionar materia y mesa(idMesa)
+Vista -> Ctrl : inscribir(idMesa)
+activate Ctrl
+
+Ctrl -> Service : inscribirAlumnoAMesa(idAlumnoAutenticado, idMesa)
+activate Service
+
+Service -> BD : verificarMesaExiste(idMesa)
+activate BD
+BD --> Service : Existe / NoExiste
+deactivate BD
+
+alt Excepción 2: No existe la mesa seleccionada
+    Service --> Ctrl : Error("Mesa de examen no encontrada")
+    Ctrl --> Vista : Mostrar error de mesa
+    Vista --> Alumno : Informar mesa inexistente
+else Mesa Existente
+    Service -> BD : verificarInscripcionExistente(idAlumno, idMesa)
+    activate BD
+    BD --> Service : Inscripto / NoInscripto
+    deactivate BD
+
+    alt Excepción 3: El alumno ya se encuentra inscripto
+        Service --> Ctrl : Error("Ya posee una inscripción a esta mesa")
+        Ctrl --> Vista : Mostrar error de duplicidad
+        Vista --> Alumno : Informar inscripción previa
+    else Sin Inscripción Previa
+        Service -> Service : validarCondicionesAcademicasYCorrelativas(idAlumno, idMesa)
+        
+        alt Excepción 1 / 4 / 5: No cumple condiciones, final aprobado o falta correlativas
+            Service --> Ctrl : Error("No cumple las condiciones académicas requeridas")
+            Ctrl --> Vista : Mostrar mensaje de inhabilitación
+            Vista --> Alumno : Informar incumplimiento de requisitos
+        else Condiciones Cumplidas
+            Service -> BD : registrarInscripcionMesa(idAlumno, idMesa)
+            activate BD
+            
+            alt Excepción 6: Se produce un error al registrar la inscripción
+                BD --> Service : ErrorBD
+                Service --> Ctrl : Error("Fallo al procesar la inscripción")
+                Ctrl --> Vista : Mostrar mensaje de error del sistema
+                Vista --> Alumno : Informar error en el registro
+            else Inscripción Exitosa (Secuencia Normal)
+                BD --> Service : RegistroConfirmado
+                deactivate BD
+                Service --> Ctrl : InscripcionExitosa
+                deactivate Service
+                Ctrl --> Vista : InformarExito("Inscripción realizada correctamente")
+                deactivate Ctrl
+                Vista --> Alumno : Mostrar mensaje de confirmación
+                deactivate Vista
+            end
+        end
+    end
+end
+
+@enduml

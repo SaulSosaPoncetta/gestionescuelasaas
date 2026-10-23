@@ -1,0 +1,108 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-39 - Inscribirse a Mesa de Examen
+
+|Estudiante|
+start
+:Consulta los finales disponibles;
+:Selecciona la mesa de examen;
+:Solicita inscribirse;
+
+|Interfaz|
+:Enviar solicitud de inscripción\n(Estudiante y Mesa de Examen);
+
+|Sistema|
+:Verificar autenticación y\ncarrera activa del estudiante;
+
+if (§¿Estudiante autenticado y\ncon carrera activa?) then (Si)
+  :Verificar disponibilidad\nde la mesa de examen;
+  
+  if (§¿Mesa disponible?) then (Si)
+    :Verificar si la materia\nya fue aprobada previamente;
+    
+    if (§¿Materia ya aprobada?) then (No)
+      :Verificar situación de cursada\ny condiciones académicas;
+      
+      if (§¿Condición académica cumplida?) then (Si)
+        :Verificar cumplimiento\nde correlativas requeridas;
+        
+        if (§¿Correlativas cumplidas?) then (Si)
+          :Verificar si existe una\ninscripción previa a la mesa;
+          
+          if (§¿Inscripción previa existente?) then (No)
+            :Registrar la inscripción en la mesa\n(EstudianteFinalesService);
+            
+            if (§¿Persistencia exitosa?) then (Si)
+              |Interfaz|
+              :Mostrar mensaje de confirmación\nde inscripción exitosa;
+              
+              |Estudiante|
+              :Visualizar comprobante/confirmación\nde inscripción;
+              stop
+            else (No)
+              |Interfaz|
+              :Mostrar mensaje de error:\nError de persistencia en BD;
+              
+              |Estudiante|
+              :Reintentar o cancelar;
+              stop
+            endif
+
+          else (Si)
+            |Interfaz|
+            :Mostrar mensaje de error:\nInscripción duplicada;
+            
+            |Estudiante|
+            :Visualizar estado de inscripción existente;
+            stop
+          endif
+
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nCorrelativas no cumplidas;
+          
+          |Estudiante|
+          :Revisar plan de estudios y correlatividades;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nCondición académica no cumplida;
+        
+        |Estudiante|
+        :Verificar estado de la cursada;
+        stop
+      endif
+
+    else (Si)
+      |Interfaz|
+      :Mostrar mensaje de error:\nMateria ya aprobada;
+      
+      |Estudiante|
+      :Visualizar historia académica;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nMesa no disponible;
+    
+    |Estudiante|
+    :Seleccionar otra mesa de examen;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nEstudiante sin carrera activa o no autenticado;
+  
+  |Estudiante|
+  :Contactar con administración o iniciar sesión;
+  stop
+endif
+
+@enduml

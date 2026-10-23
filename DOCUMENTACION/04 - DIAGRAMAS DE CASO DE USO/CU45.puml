@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-45: Consultar Auditoría" as CU45
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Usuario Autenticado y\nPermisos de Módulo (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Auditoría y Mostrar Registros" as Sec1
+    usecase "Consultar y Analizar Operaciones\n(Usuario, Operación, Categoría, Fecha)" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Información de Auditoría Disponible\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 3: Usuario sin Permisos" as Exc3
+    usecase "Exc 1: No Existen Registros" as Exc1
+    usecase "Exc 2: Error de Consulta" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU45
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU45 ..> Precond : <<include>>
+    CU45 ..> Sec1 : <<include>>
+    CU45 ..> Sec2 : <<include>>
+    CU45 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc3 ..> Precond : <<extend>>
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec1 : <<extend>>
+}
+@enduml

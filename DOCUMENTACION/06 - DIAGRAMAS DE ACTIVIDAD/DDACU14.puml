@@ -1,0 +1,79 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-14 - Consultar Estudiantes
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de estudiantes;
+
+|Interfaz|
+:Solicitar listado de estudiantes;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Obtener estudiantes\ndesde la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    |Interfaz|
+    :Mostrar lista general\nde estudiantes;
+    
+    |Administrador / Secretaría|
+    :Establece filtros de búsqueda;
+    
+    |Interfaz|
+    :Enviar filtros al sistema;
+    
+    |Sistema|
+    :Procesar la búsqueda con filtros;
+    
+    if (§¿Se encuentran estudiantes?) then (Si)
+      |Interfaz|
+      :Mostrar resultados de la búsqueda;
+      
+      |Administrador / Secretaría|
+      if (§¿Desea acceder al perfil\nde un estudiante?) then (Si)
+        :Selecciona un estudiante;
+        
+        |Interfaz|
+        :Mostrar perfil del estudiante;
+        
+        |Administrador / Secretaría|
+        :Visualizar datos del perfil;
+        stop
+      else (No)
+        stop
+      endif
+      
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No se encuentran\nestudiantes con los filtros aplicados;
+      
+      |Administrador / Secretaría|
+      :Visualizar pantalla sin resultados;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Administrador / Secretaría|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

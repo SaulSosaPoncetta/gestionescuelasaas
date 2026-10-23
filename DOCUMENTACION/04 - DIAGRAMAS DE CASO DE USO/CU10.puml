@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-10: Consultar Docentes" as CU10
+    
+    ' --- PRECONDICIÓN ---
+    usecase "Verificar Usuario Autenticado\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder al Módulo de Docentes" as Sec1
+    usecase "Ingresar Criterios y Filtrar Búsqueda" as Sec2
+    usecase "Seleccionar un Docente para Consulta" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Mostrar Listado de Docentes\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Existen Coincidencias" as Exc1
+    usecase "Exc 2: Error de Consulta" as Exc2
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU10
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU10 ..> Precond : <<include>>
+    CU10 ..> Sec1 : <<include>>
+    CU10 ..> Sec2 : <<include>>
+    CU10 ..> Sec3 : <<include>>
+    CU10 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc2 ..> Sec1 : <<extend>>
+    Exc1 ..> Sec2 : <<extend>>
+}
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-63 - Docente Consulta Información de Alumno
+
+|Docente|
+start
+:Selecciona un alumno específico;
+
+|Interfaz|
+:Solicitar ficha académica del alumno;
+
+|Sistema|
+:Verificar existencia del alumno;
+
+if (§¿Alumno existe?) then (Si)
+  :Verificar vínculo académico docente-alumno;
+
+  if (§¿Existe relación académica?) then (Si)
+    :Consultar perfil e historial del alumno en la BD;
+
+    if (§¿Consulta exitosa?) then (Si)
+      if (§¿Información completa y disponible?) then (Si)
+        |Interfaz|
+        :Desplegar ficha de información académica del alumno;
+
+        |Docente|
+        :Visualizar la ficha del alumno;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar advertencia:\nDatos del alumno incompletos / no disponibles;
+
+        |Docente|
+        :Visualizar la ficha parcial o advertencia;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error\nde lectura en la BD;
+
+      |Docente|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nNo tiene permisos para ver a este alumno;
+
+    |Docente|
+    :Regresar al listado de alumnos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nEl alumno seleccionado no existe;
+
+  |Docente|
+  :Regresar al listado de alumnos;
+  stop
+endif
+
+@enduml

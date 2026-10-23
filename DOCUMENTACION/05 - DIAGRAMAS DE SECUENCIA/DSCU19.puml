@@ -1,0 +1,86 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "CarreraRegistroUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "CarreraController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Despliegue del Formulario ==
+
+Actor -> UI: Seleccionar "Agregar carrera"
+activate UI
+
+UI -> Ctrl: prepararFormularioAlta()
+activate Ctrl
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl --> UI: mostrarFormularioVacio()
+deactivate Ctrl
+UI --> Actor: El sistema muestra el formulario de alta de carrera
+deactivate UI
+
+== Fase 2: Ingreso de Datos y Persistencia Transaccional ==
+
+Actor -> UI: Ingresar los datos de la carrera y confirmar
+activate UI
+
+alt Excepción 1: Datos incompletos
+    UI --> Actor: Mostrar advertencia "Por favor, complete todos los campos obligatorios"
+else Formulario completo
+    UI -> Ctrl: registrarCarrera(datosCarrera)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarFormatosYReglas(datosCarrera)
+    
+    == Verificación de Unicidad en Base de Datos ==
+    Ctrl -> DB: verificarCarreraExistente(datosCarrera.codigo o datosCarrera.nombre)
+    activate DB
+    return carreraExiste
+    
+    alt Excepción 2: Carrera duplicada
+        Ctrl --> UI: error: La carrera ya se encuentra registrada
+        UI --> Actor: Mostrar mensaje "Error: Ya existe una carrera con ese nombre o código"
+        
+    else Carrera única
+        
+        Ctrl -> DB: insertarCarrera(datosCarrera)
+        activate DB
+        
+        alt Excepción 3: Error de persistencia (Fallo físico de base de datos)
+            DB --> Ctrl: error: MaxConnection / SQLException
+            Ctrl --> UI: error: No se pudo completar el registro
+            UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente nuevamente"
+        else Escritura exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: registroCarreraExitoso
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Carrera registrada"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,69 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-06 - Consultar Administradores
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de\nadministradores;
+
+|Interfaz|
+:Solicitar listado de\nadministradores;
+
+|Sistema|
+:Verificar autenticación\ny permisos de acceso;
+
+if (§¿Permisos válidos?) then (Si)
+  :Consultar administradores\nen la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen administradores?) then (Si)
+      |Interfaz|
+      :Mostrar listado de\nadministradores;
+      
+      |Administrador / Secretaría|
+      repeat
+        :Aplica filtros de búsqueda\n(Opcional);
+        
+        |Interfaz|
+        :Enviar criterios de filtro;
+        
+        |Sistema|
+        :Filtrar registros;
+        
+        |Interfaz|
+        :Mostrar resultados filtrados;
+        
+        |Administrador / Secretaría|
+      repeat while (§¿Desea aplicar\notro filtro?) is (Si)
+      ->No;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen\nadministradores registrados;
+      
+      |Administrador / Secretaría|
+      :Visualizar pantalla vacía;
+      stop
+    endif
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Administrador / Secretaría|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Acceso no autorizado;
+  
+  |Administrador / Secretaría|
+  :Regresar al menú principal;
+  stop
+endif
+
+@enduml

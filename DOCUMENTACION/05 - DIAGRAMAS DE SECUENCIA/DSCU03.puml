@@ -1,0 +1,123 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario" as Actor
+box "Capa de Presentación" 
+    participant "LoginUI / ResetUI" as UI
+end box
+box "Capa de Negocio" 
+    participant "LoginPasswordReset" as Ctrl
+    participant "EmailService" as Mail
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Solicitud de Recuperación y Envío de Correo ==
+
+Actor -> UI: Seleccionar "Olvidé mi contraseña"
+activate UI
+UI --> Actor: Solicitar ingreso de correo electrónico
+deactivate UI
+
+Actor -> UI: Ingresar correo electrónico y enviar
+activate UI
+
+UI -> Ctrl: solicitarRecuperacion(correo)
+activate Ctrl
+
+Ctrl -> DB: verificarExistenciaCuenta(correo)
+activate DB
+
+alt Excepción 1: Correo inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Correo no registrado
+    UI --> Actor: Mostrar mensaje "Si el correo es correcto, recibirá un enlace pronto"
+else Cuenta existe
+    return datosUsuario
+    
+    Ctrl -> Ctrl: generarTokenRecuperacion()
+    
+    Ctrl -> DB: guardarToken(datosUsuario.id, token, expiracion)
+    activate DB
+    deactivate DB
+    
+    Ctrl -> Mail: enviarCorreoRecuperacion(correo, token)
+    activate Mail
+    
+    alt Excepción 5: Error de envío del correo
+        Mail --> Ctrl: EmailDeliveryException
+        Ctrl --> UI: error: No se pudo enviar el correo
+        UI --> Actor: Mostrar mensaje "Error al enviar el correo, intente más tarde"
+    else Envío exitoso
+        return confirmacionEnvio
+        Ctrl --> UI: solicitudProcesadaOk
+        deactivate Ctrl
+        UI --> Actor: Mostrar mensaje "Se ha enviado un enlace a su correo"
+        deactivate UI
+    end
+end
+
+== Fase 2: Restablecimiento de Contraseña (Uso del Enlace) ==
+
+Actor -> UI: Acceder al enlace recibido en el correo
+activate UI
+
+UI -> Ctrl: validarTokenRecuperacion(token)
+activate Ctrl
+
+Ctrl -> DB: buscarToken(token)
+activate DB
+return datosToken
+
+alt Excepción 2: Token inválido
+    Ctrl --> UI: error: Token inexistente/alterado
+    UI --> Actor: Mostrar mensaje "El enlace de recuperación es inválido"
+else Excepción 3: Token vencido
+    Ctrl --> UI: error: Token expirado
+    UI --> Actor: Mostrar mensaje "El enlace ha expirado, solicite uno nuevo"
+else Token válido
+    Ctrl --> UI: tokenValidoOk
+    deactivate Ctrl
+    UI --> Actor: Mostrar formulario de nueva contraseña
+    deactivate UI
+    
+    Actor -> UI: Ingresar nueva contraseña y confirmar
+    activate UI
+    
+    UI -> Ctrl: restablecerPassword(token, nuevaPassword)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarReglasPassword(nuevaPassword)
+    
+    alt Excepción 4: Contraseña no cumple reglas de validación
+        Ctrl --> UI: error: Contraseña débil / no cumple requisitos
+        UI --> Actor: Mostrar mensaje "La contraseña debe incluir mayúsculas, números y símbolos"
+    else Contraseña válida
+        Ctrl -> DB: actualizarPassword(datosToken.usuarioId, nuevaPasswordHash)
+        activate DB
+        deactivate DB
+        
+        Ctrl -> DB: invalidarTokenUsado(token)
+        activate DB
+        deactivate DB
+        
+        Ctrl --> UI: actualizacionExitosa
+        deactivate Ctrl
+        UI --> Actor: Mostrar mensaje "Contraseña actualizada. Ya puede iniciar sesión"
+        deactivate UI
+    end
+end
+
+@enduml

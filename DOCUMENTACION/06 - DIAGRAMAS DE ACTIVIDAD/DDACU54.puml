@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-54 - Docente Consulta Perfil de una Materia
+
+|Docente|
+start
+:Selecciona una materia asignada;
+
+|Interfaz|
+:Solicitar perfil de la materia seleccionada;
+
+|Sistema|
+:Verificar autenticación del docente;
+
+if (§¿Docente autenticado?) then (Si)
+  :Buscar materia en la base de datos;
+
+  if (§¿Materia existe?) then (Si)
+    :Verificar asignación de la materia al docente;
+
+    if (§¿Materia asignada al docente?) then (Si)
+      :Recuperar programa, plan, comisiones y detalles;
+
+      if (§¿Consulta exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar la información del perfil de la materia;
+
+        |Docente|
+        :Visualizar el perfil de la materia;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error\nde lectura en la BD;
+
+        |Docente|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nMateria no asociada al docente;
+
+      |Docente|
+      :Regresar al listado de materias;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nMateria inexistente;
+
+    |Docente|
+    :Regresar al listado de materias;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir a Login;
+
+  |Docente|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

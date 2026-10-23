@@ -1,0 +1,127 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "PlanEstudioUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "PlanEstudioController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Selección del Plan ==
+
+Actor -> UI: Seleccionar plan de estudio
+activate UI
+
+UI -> Ctrl: consultarPlanEstudio(idPlan)
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    Ctrl -> Session: verificarPermisosAdministrativos()
+    activate Session
+    return permisosValidos
+
+    == Fase 2: Recuperación del Plan ==
+
+    Ctrl -> DB: consultarPlanEstudio(idPlan)
+    activate DB
+
+    alt Excepción 1: Plan inexistente
+
+        DB --> Ctrl: plan inexistente
+        Ctrl --> UI: error: Plan inexistente
+        UI --> Actor: Mostrar mensaje "El plan de estudio seleccionado no existe"
+
+    else Plan existente
+
+        return planEstudio
+
+        Ctrl --> UI: mostrarInformacionPlan(planEstudio)
+        UI --> Actor: Mostrar información del plan
+
+        == Fase 3: Modificación del Plan ==
+
+        Actor -> UI: Modificar los datos del plan
+        Actor -> UI: Reemplazar documentación
+        Actor -> UI: Confirmar modificación
+
+        UI -> Ctrl: actualizarPlan(datosPlan, archivo)
+
+        Ctrl -> Ctrl: validarDatos(datosPlan)
+
+        alt Excepción 2: Datos inválidos
+
+            Ctrl --> UI: error: Datos inválidos
+            UI --> Actor: Mostrar mensaje "Los datos ingresados no son válidos"
+
+        else Datos válidos
+
+            Ctrl -> Ctrl: validarArchivo(archivo)
+
+            alt Excepción 3: Archivo inválido
+
+                Ctrl --> UI: error: Archivo inválido
+                UI --> Actor: Mostrar mensaje "El archivo seleccionado no es válido"
+
+            else Archivo válido
+
+                == Fase 4: Actualización del Plan ==
+
+                Ctrl -> DB: actualizarPlan(datosPlan, archivo)
+                activate DB
+
+                alt Excepción 4: Error de actualización
+
+                    DB --> Ctrl: error: Error de actualización
+                    Ctrl --> UI: error: No se pudo actualizar el plan
+                    UI --> Actor: Mostrar mensaje "No se pudo actualizar el plan de estudio"
+
+                else Actualización exitosa
+
+                    return actualizacionOK
+
+                    Ctrl --> UI: confirmarOperacion
+                    deactivate Ctrl
+
+                    UI --> Actor: El sistema confirma la operación: "El plan de estudio fue actualizado correctamente"
+                    deactivate UI
+
+                end
+            end
+        end
+    end
+end
+
+@enduml

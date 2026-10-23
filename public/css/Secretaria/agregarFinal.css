@@ -1,0 +1,72 @@
+.form-grid.agregarFinal-grid {
+    align-items: start;
+}
+
+.form-grid.agregarFinal-grid > label {
+    margin-top: 10px;
+}
+
+/* ── FILA FECHA + HORA ────────────────────────────────────────────────── */
+.fecha-hora-row {
+    display: flex;
+    gap: 10px;
+}
+
+.fecha-hora-row input[type="date"] {
+    flex: 2;
+}
+
+.fecha-hora-row input[type="time"] {
+    flex: 1;
+    min-width: 110px;
+}
+
+#docente-dropdown {
+    margin-bottom: 16px;
+    max-width: 420px;
+}
+
+.input-buscar-docente {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1.5px solid #bbb;
+    background: #f5f5f5;
+    font-size: 14px;
+    color: #555;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+}
+
+.input-buscar-docente:hover,
+.input-buscar-docente:focus {
+    border-color: #2563eb;
+    background-color: #fff;
+}
+
+.input-buscar-docente:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.tabla-tipo-select {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1.5px solid #bbb;
+    background: #f5f5f5;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+}
+
+.tabla-tipo-select:hover,
+.tabla-tipo-select:focus {
+    border-color: #2563eb;
+    background: #fff;
+    outline: none;
+}
+
+.btn-quitar-docente,
+.btn-quitar-docente:hover {
+    background-color: rgb(228, 59, 59) !important;
+}

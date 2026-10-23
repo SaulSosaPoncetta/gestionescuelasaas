@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Alumno" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-78: Estudiante Actualiza Perfil" as CU78
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Alumno Autenticado y\nPerfil Registrado (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Perfil y Mostrar Datos Modificables" as Sec1
+    usecase "Modificar Datos y Confirmar Cambios" as Sec2
+    usecase "Validar Información, Actualizar Datos e Informar Resultado" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Datos Modificables del Perfil Actualizados en el Sistema\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Datos Inválidos / Exc 2: Modificación de Información no Permitida" as Exc1_2
+    usecase "Exc 3: Error Durante la Actualización" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU78
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU78 ..> Precond : <<include>>
+    CU78 ..> Sec1 : <<include>>
+    CU78 ..> Sec2 : <<include>>
+    CU78 ..> Sec3 : <<include>>
+    CU78 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1_2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+}
+@enduml

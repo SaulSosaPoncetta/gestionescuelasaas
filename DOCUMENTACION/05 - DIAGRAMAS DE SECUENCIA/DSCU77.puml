@@ -1,0 +1,47 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaPerfilEstudiante" as Vista
+control "PerfilEstudianteController" as Ctrl
+entity "AlumnoService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-77: Estudiante Consulta Datos Personales
+
+Alumno -> Vista : Seleccionar la opción "Mi Perfil / Datos Personales"
+activate Vista
+Vista -> Ctrl : obtenerPerfilEstudiante()
+activate Ctrl
+
+Ctrl -> Service : obtenerDatosPersonalesAlumno(idAlumnoAutenticado)
+activate Service
+Service -> BD : buscarAlumnoPorUsuarioId(idUsuario)
+activate BD
+BD --> Service : DatosPerfil / null
+deactivate BD
+
+alt Excepción 1: No existe información asociada al usuario
+    Service --> Ctrl : Error("No se encontraron datos personales")
+    Ctrl --> Vista : Mostrar advertencia
+    Vista --> Alumno : Informar falta de información de perfil
+else Excepción 2: El usuario no corresponde a un alumno
+    Service --> Ctrl : Error("El usuario autenticado no posee el rol estudiante")
+    Ctrl --> Vista : Mostrar mensaje de restricción de acceso
+    Vista --> Alumno : Informar rol no válido
+else Excepción 3: Error al obtener los datos
+    Service --> Ctrl : Error("Error de comunicación con la base de datos")
+    Ctrl --> Vista : Mostrar mensaje de error del sistema
+    Vista --> Alumno : Informar error en la consulta
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : DatosPerfil
+    deactivate Service
+    Ctrl --> Vista : MostrarDatosPersonales(DatosPerfil)
+    deactivate Ctrl
+    Vista --> Alumno : Presentar los datos personales del estudiante
+    deactivate Vista
+end
+
+@enduml

@@ -1,0 +1,84 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Usuario Autenticado" as Actor
+box "Capa de Presentación" 
+    participant "PerfilUI (Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "PerfilController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Carga del Formulario de Edición ==
+
+Actor -> UI: Acceder a su perfil y seleccionar "Modificar datos"
+activate UI
+
+UI -> Ctrl: obtenerFormularioEdicion()
+activate Ctrl
+
+Ctrl -> Session: verificarSesiónActiva()
+activate Session
+deactivate Session
+
+Ctrl -> DB: obtenerDatosActuales()
+activate DB
+return datosActuales
+
+Ctrl --> UI: formularioCargado(datosActuales)
+deactivate Ctrl
+UI --> Actor: Mostrar formulario con datos editables
+deactivate UI
+
+== Fase 2: Envío de Cambios y Validaciones ==
+
+Actor -> UI: Modificar los datos y presionar "Confirmar"
+activate UI
+
+alt Excepción 2: Campos obligatorios incompletos
+    UI --> Actor: Mostrar advertencia "Por favor, complete todos los campos requeridos"
+else Envío de datos completo
+    UI -> Ctrl: actualizarPerfil(nuevosDatos)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarReglasNegocio(nuevosDatos)
+    
+    alt Excepción 1: Datos inválidos (Formato erróneo, email incorrecto, etc.)
+        Ctrl --> UI: error: Datos inválidos
+        UI --> Actor: Mostrar campos con error y solicitar corrección
+    else Datos válidos de negocio
+        
+        Ctrl -> DB: guardarCambiosPerfil(nuevosDatos)
+        activate DB
+        
+        alt Excepción 3: Error de actualización (Fallo de consistencia / Conexión)
+            DB --> Ctrl: error: Error en persistencia
+            Ctrl --> UI: error: No se pudo actualizar la información
+            UI --> Actor: Mostrar mensaje "Error interno al guardar los cambios, intente de nuevo"
+        else Transacción exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: actualizacionExitosa
+            deactivate Ctrl
+            UI --> Actor: Mostrar mensaje "Los datos del perfil quedan actualizados"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

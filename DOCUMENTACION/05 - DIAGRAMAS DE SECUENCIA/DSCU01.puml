@@ -1,0 +1,113 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+skinparam defaultFontSize 20
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+<style>
+  box {
+    BackgroundColor transparent
+    FontSize 20
+  }
+  actor {
+    FontSize 30
+  }
+  participant {
+    FontSize 25
+
+  }
+  header {
+    FontSize 25
+  }
+</style>
+
+autonumber
+
+actor "Usuario\n(Admin/Sec/Doc/Est)" as Actor
+
+box "Capa de Presentación"
+    participant "LoginUI (Pantalla)" as UI
+end box
+box "Capa de Negocio"
+    participant "LoginController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos"
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Acceder a pantalla de inicio de sesión
+activate UI
+UI --> Actor: Mostrar campos de credenciales
+deactivate UI
+
+Actor -> UI: Ingresar credenciales y confirmar
+activate UI
+
+== Procesamiento y Validaciones ==
+
+alt Excepción 4: Datos incompletos
+    UI --> Actor: Mostrar mensaje "Campos obligatorios vacíos"
+else Datos completos
+    UI -> Ctrl: autenticar(usuario, password)
+    activate Ctrl
+    
+    Ctrl -> DB: buscarUsuarioPorNombre(usuario)
+    activate DB
+    
+    alt Excepción 5: Error de conexión con BD
+        DB --> Ctrl: SQLException (Error de conexión)
+        Ctrl --> UI: error: Falla de conexión
+        UI --> Actor: Mostrar mensaje "Error del sistema, intente más tarde"
+    else Conexión exitosa
+        return registroUsuario
+        
+        alt Excepción 2: Usuario inexistente
+            Ctrl --> UI: error: Usuario no encontrado
+            activate UI
+            UI --> Actor: Mostrar mensaje "Credenciales inválidas"
+            deactivate UI
+        else Usuario existe
+            Ctrl -> Ctrl: validarPassword(password, registroUsuario.hash)
+            
+            alt Excepción 1: Credenciales incorrectas
+                Ctrl --> UI: error: Password incorrecto
+                activate UI
+                UI --> Actor: Mostrar mensaje "Credenciales inválidas"
+                deactivate UI
+            else Password correcto
+                Ctrl -> Ctrl: verificarEstado(registroUsuario)
+                
+                alt Excepción 3: Usuario inactivo
+                    Ctrl --> UI: error: Usuario inhabilitado
+                    activate UI
+                    UI --> Actor: Mostrar mensaje "Cuenta inactiva, contacte soporte"
+                    deactivate UI
+                else Usuario habilitado (Flujo Normal)
+                    
+                    == Creación de Sesión y Redirección ==
+                    
+                    Ctrl -> DB: registrarLogInicioSesion(usuario.id, fechaHora)
+                    activate DB
+                    deactivate DB
+                    
+                    Ctrl -> Session: crearSesion(registroUsuario)
+                    activate Session
+                    return tokenSesion
+                    
+                    Ctrl --> UI: autenticaciónExitosa(tokenSesion, registroUsuario.perfil)
+                    deactivate Ctrl
+                    
+                    UI -> UI: determinarInterfazPorPerfil(registroUsuario.perfil)
+                    UI --> Actor: Redirigir al Dashboard correspondiente (Usuario Autenticado)
+                    deactivate UI
+                end
+            end
+        end
+    end
+end
+
+@enduml

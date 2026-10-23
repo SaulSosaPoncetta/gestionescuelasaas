@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-24 - Modificar Materia
+
+|Administrador / Secretaría|
+start
+:Selecciona la materia\npara modificar;
+
+|Interfaz|
+:Solicitar datos de\nla materia seleccionada;
+
+|Sistema|
+:Buscar materia\nen la base de datos;
+
+if (§¿Materia existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con los\ndatos de la materia;
+  
+  |Administrador / Secretaría|
+  :Modifica la información\ny confirma la operación;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar consistencia y\nformato de los datos;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Actualizar la materia\nen la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar información de\nla materia actualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

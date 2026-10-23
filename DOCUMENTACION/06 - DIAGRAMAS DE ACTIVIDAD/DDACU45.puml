@@ -1,0 +1,69 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-45 - Consultar Auditoría
+
+|Administrador / Secretaría|
+start
+:Accede al módulo de Auditoría;
+
+|Interfaz|
+:Solicitar registros de auditoría;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Verificar permisos de acceso\nal módulo de auditoría;
+  
+  if (§¿Posee permisos de acceso?) then (Si)
+    :Recuperar registros de auditoría\ndesde la base de datos (AuditoriaListener);
+    
+    if (§¿Consulta exitosa?) then (Si)
+      if (§¿Existen registros de auditoría?) then (Si)
+        |Interfaz|
+        :Mostrar tabla de registros con usuario,\noperación, categoría y fecha/hora;
+        
+        |Administrador / Secretaría|
+        :Consulta las operaciones registradas;
+        :Analiza detalles por usuario, operación,\ncategoría de auditoría y fecha;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje: No existen\nregistros de auditoría;
+        
+        |Administrador / Secretaría|
+        :Visualizar pantalla sin registros;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error\nde lectura / consulta en BD;
+      
+      |Administrador / Secretaría|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nUsuario sin permisos para acceder a Auditoría;
+    
+    |Administrador / Secretaría|
+    :Visualizar aviso de acceso denegado;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

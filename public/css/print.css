@@ -1,0 +1,96 @@
+/* print.css
+   Estilos de impresión reusables para cualquier pantalla que tenga un
+   botón "Imprimir" (window.print()).
+
+   Cómo usarlo en una vista:
+   1. Incluir este archivo (después de los demás CSS de la página):
+        <link rel="stylesheet" href="{{ asset('css/print.css') }}">
+
+   2. Envolver el contenido que SÍ querés que se imprima con la clase
+      "printable-area". Puede ser un <div> nuevo alrededor de la card/tabla,
+      no hace falta que sea el <div class="main"> completo.
+
+   3. Marcar con la clase "no-print" cualquier elemento que esté DENTRO
+      de printable-area pero que no deba salir en el papel (por ejemplo,
+      el botón de imprimir en sí, o botones de acción tipo Modificar).
+
+   Todo lo que esté fuera de .printable-area (sidebar, header, footer,
+   botones sueltos) se oculta automáticamente al imprimir, sin tener que
+   marcarlo elemento por elemento.
+*/
+
+@media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    .printable-area,
+    .printable-area * {
+        visibility: visible;
+    }
+
+    .printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    /* Que los inputs de nota se vean como texto plano, no como campo de
+       formulario con borde, cuando se imprimen */
+    .printable-area input {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        color: #000 !important;
+        -webkit-appearance: none;
+    }
+
+    .printable-area table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* El contenedor de la tabla suele tener overflow-x:auto para scroll
+       en pantalla. Al imprimir eso corta columnas (no hay "scroll" en
+       papel) — se fuerza a que fluya normal y muestre todo el ancho. */
+    .printable-area .table-container {
+        overflow: visible !important;
+        width: auto !important;
+        max-width: 100% !important;
+    }
+
+    .printable-area th,
+    .printable-area td {
+        border: 1px solid #999;
+        padding: 6px 10px;
+    }
+
+    /* DataTables agrega sus propios controles (paginación, buscador,
+       "Mostrando X de Y", iconitos de orden ↕ en los headers). No
+       tienen sentido en papel — se ocultan sin tocar el HTML del blade. */
+    .printable-area .dataTables_paginate,
+    .printable-area .dataTables_length,
+    .printable-area .dataTables_filter,
+    .printable-area .dataTables_info,
+    .printable-area .dataTables_processing {
+        display: none !important;
+    }
+
+    .printable-area table.dataTable thead th.sorting::before,
+    .printable-area table.dataTable thead th.sorting::after,
+    .printable-area table.dataTable thead th.sorting_asc::before,
+    .printable-area table.dataTable thead th.sorting_asc::after,
+    .printable-area table.dataTable thead th.sorting_desc::before,
+    .printable-area table.dataTable thead th.sorting_desc::after {
+        display: none !important;
+    }
+}

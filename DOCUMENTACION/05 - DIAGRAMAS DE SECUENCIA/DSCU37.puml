@@ -1,0 +1,122 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "HistorialFinalesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "HistorialFinalesController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso al Historial ==
+
+Actor -> UI: Acceder al historial
+activate UI
+
+UI -> Ctrl: consultarHistorial()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Recuperación de Mesas ==
+
+    Ctrl -> DB: consultarMesasHistorial()
+    activate DB
+
+    alt Excepción 1: No existen registros
+
+        DB --> Ctrl: no existen registros
+        Ctrl --> UI: error: No existen registros
+        UI --> Actor: Mostrar mensaje "No existen registros históricos"
+
+    else Existen registros
+
+        return listaMesas
+
+        Ctrl --> UI: mostrarMesas(listaMesas)
+        UI --> Actor: Mostrar mesas de examen del historial
+
+        == Fase 3: Aplicación de Filtros ==
+
+        Actor -> UI: Aplicar filtros
+
+        UI -> Ctrl: buscarHistorial(filtros)
+
+        Ctrl -> DB: procesarBusqueda(filtros)
+        activate DB
+
+        alt Excepción 2: No hay coincidencias
+
+            DB --> Ctrl: no hay coincidencias
+            Ctrl --> UI: error: No hay coincidencias
+            UI --> Actor: Mostrar mensaje "No se encontraron resultados para los filtros aplicados"
+
+        else Existen coincidencias
+
+            return resultados
+
+            Ctrl --> UI: mostrarResultados(resultados)
+            UI --> Actor: Mostrar resultados de la búsqueda
+
+            == Fase 4: Consulta de Detalle ==
+
+            Actor -> UI: Consultar detalle de una mesa
+
+            UI -> Ctrl: consultarDetalle(idMesa)
+
+            Ctrl -> DB: consultarDetalle(idMesa)
+            activate DB
+
+            alt Excepción 3: Error de consulta
+
+                DB --> Ctrl: error: Error de consulta
+                Ctrl --> UI: error: No se pudo realizar la consulta
+                UI --> Actor: Mostrar mensaje "No se pudo consultar la información histórica"
+
+            else Consulta exitosa
+
+                return detalleMesa
+
+                Ctrl --> UI: mostrarDetalle(detalleMesa)
+                deactivate Ctrl
+
+                UI --> Actor: Mostrar detalle de la mesa de examen
+                deactivate UI
+
+            end
+        end
+    end
+end
+
+@enduml

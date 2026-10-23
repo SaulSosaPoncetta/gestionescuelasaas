@@ -1,0 +1,124 @@
+/* ── LAYOUT ─────────────────────────────── */
+.main {
+    padding-bottom: 80px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.top-bar h1 {
+    font-size: clamp(22px, 2vw, 32px);
+    color: #444;
+}
+
+/* ── BOTONES DE ACCIÓN ───────────────────── */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin-bottom: 28px;
+}
+
+/* ── ÁREA DE TABLA ───────────────────────── */
+.table-area {
+    max-width: 900px;
+}
+
+/* Placeholder */
+.table-placeholder {
+    background: #EBEBEB;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    color: #999;
+}
+
+.table-placeholder i {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 10px;
+    color: #bbb;
+}
+
+.table-placeholder p {
+    font-size: 15px;
+}
+
+/* Tabla */
+.carrera-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-size: 14px;
+}
+
+.carrera-table thead tr {
+    background: #EBEBEB;
+}
+
+.carrera-table th {
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+
+.carrera-table td {
+    padding: 12px 18px;
+    color: #555;
+    border-bottom: 1px solid #eee;
+}
+
+.carrera-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.carrera-table tbody tr:hover {
+    background: #f0f5ff;
+    cursor: pointer;
+}
+
+/* carreraSec.css */
+.form-grid.buscar-alumno-final {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+
+.form-grid.buscar-alumno-final .btn-agregar {
+    justify-self: start;
+    width: auto;
+}
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media (max-width: 900px) {
+    .action-buttons,
+    .table-area {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .action-buttons .btn-primary {
+        flex: 1;
+        min-width: calc(50% - 4px);
+        text-align: center;
+    }
+
+    .carrera-table td:nth-child(2),
+    .carrera-table th:nth-child(2) {
+        display: none;
+    }
+}

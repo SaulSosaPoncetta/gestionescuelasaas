@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-25: Asignar Docente a Materia" as CU25
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Materia, Registro de Docente\ny Ausencia de Asociación Previa (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Materia y Solicitar Asignación" as Sec1
+    usecase "Mostrar y Seleccionar Docente Disponible" as Sec2
+    usecase "Validar y Registrar Relación" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Docente Asociado a la Materia\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Materia Inexistente" as Exc1
+    usecase "Exc 2: Docente Inexistente" as Exc2
+    usecase "Exc 3: Docente ya Asignado" as Exc3
+    usecase "Exc 4: Error de Persistencia" as Exc4
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU25
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU25 ..> Precond : <<include>>
+    CU25 ..> Sec1 : <<include>>
+    CU25 ..> Sec2 : <<include>>
+    CU25 ..> Sec3 : <<include>>
+    CU25 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec3 : <<extend>>
+    Exc4 ..> Sec3 : <<extend>>
+}
+@enduml

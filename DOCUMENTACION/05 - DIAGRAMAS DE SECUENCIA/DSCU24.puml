@@ -1,0 +1,82 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "MateriaGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "MateriaController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección y Carga de Información Existente ==
+
+Actor -> UI: Seleccionar una materia del listado
+activate UI
+
+UI -> Ctrl: obtenerDatosParaModificacion(materiaId)
+activate Ctrl
+
+Ctrl -> DB: buscarMateriaPorId(materiaId)
+activate DB
+
+alt Excepción 1: Materia inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Materia no existe
+    UI --> Actor: Mostrar mensaje "La materia seleccionada no existe en el sistema"
+else Materia encontrada con éxito
+    return datosMateria
+    
+    Ctrl --> UI: mostrarFormularioEdicion(datosMateria)
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra el formulario con la información cargada
+    deactivate UI
+
+    == Fase 2: Modificación, Validación y Actualización ==
+
+    Actor -> UI: Modificar la información y confirmar la operación
+    activate UI
+    
+    UI -> Ctrl: actualizarMateria(materiaId, nuevosDatos)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarNuevosDatos(nuevosDatos)
+    
+    alt Excepción 2: Datos inválidos
+        Ctrl --> UI: error: Datos no válidos según reglas de negocio
+        UI --> Actor: Mostrar campos con error y solicitar su corrección
+    else Datos válidos
+        
+        Ctrl -> DB: modificarRegistroMateria(materiaId, nuevosDatos)
+        activate DB
+        
+        alt Excepción 3: Error de actualización
+            DB --> Ctrl: error: Fallo de persistencia / Conexión
+            Ctrl --> UI: error: No se pudo guardar la información
+            UI --> Actor: Mostrar mensaje "Error interno al actualizar la materia, intente de nuevo"
+        else Actualización exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: modificacionMateriaExitosa
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Información de la materia actualizada"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

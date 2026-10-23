@@ -1,0 +1,84 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-40 - Dar de Baja Inscripción a Mesa
+
+|Estudiante|
+start
+:Consulta sus inscripciones;
+:Selecciona una inscripción;
+:Solicita la baja de la inscripción;
+
+|Interfaz|
+:Enviar solicitud de baja\n(Estudiante e Inscripción);
+
+|Sistema|
+:Verificar autenticación del estudiante;
+
+if (§¿Estudiante autenticado?) then (Si)
+  :Buscar la inscripción en la base de datos;
+  
+  if (§¿Inscripción existe?) then (Si)
+    :Verificar que la inscripción\ncorresponda al estudiante;
+    
+    if (§¿Corresponde al estudiante?) then (Si)
+      :Verificar disponibilidad de la mesa\npara dar de baja (plazo/período vigente);
+      
+      if (§¿Mesa disponible para baja?) then (Si)
+        :Procesar baja y eliminar o anular\nla inscripción de la mesa;
+        
+        if (§¿Actualización exitosa?) then (Si)
+          |Interfaz|
+          :Mostrar mensaje de confirmación\nde baja exitosa;
+          
+          |Estudiante|
+          :Visualizar confirmación de baja\ny listado de inscripciones actualizado;
+          stop
+        else (No)
+          |Interfaz|
+          :Mostrar mensaje de error:\nError de actualización en BD;
+          
+          |Estudiante|
+          :Reintentar o cancelar;
+          stop
+        endif
+
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nMesa no disponible para baja\n(plazo de baja vencido);
+        
+        |Estudiante|
+        :Visualizar aviso de restricción;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nLa inscripción pertenece a otro estudiante;
+      
+      |Estudiante|
+      :Visualizar mensaje de error;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nInscripción inexistente;
+    
+    |Estudiante|
+    :Regresar al listado de inscripciones;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Estudiante|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

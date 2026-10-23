@@ -1,0 +1,82 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-27 - Cargar Notas de Cursada
+
+|Administrador / Secretaría|
+start
+:Selecciona una materia;
+:Accede a la carga de notas;
+
+|Interfaz|
+:Enviar solicitud de carga de notas\npara la materia seleccionada;
+
+|Sistema|
+:Buscar materia en la base de datos;
+
+if (§¿Materia existe?) then (Si)
+  :Obtener estudiantes asociados\na la materia;
+  
+  if (§¿Existen estudiantes asociados?) then (Si)
+    |Interfaz|
+    :Mostrar plantilla/lista de estudiantes\npara ingreso de notas;
+    
+    |Administrador / Secretaría|
+    :Ingresa las calificaciones\ny confirma la operación;
+    
+    |Interfaz|
+    :Enviar calificaciones ingresadas;
+    
+    |Sistema|
+    :Validar datos completos y rango\npermitido de calificaciones;
+    
+    if (§¿Notas completas y en\nrango permitido?) then (Si)
+      :Registrar notas en la base de datos;
+      :Evaluar condiciones de cierre y\nactualizar situación de cursada;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde carga de notas exitosa;
+        
+        |Administrador / Secretaría|
+        :Visualizar las calificaciones\ny estado de cursada actualizados;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error: Datos incompletos\no notas fuera del rango permitido;
+      
+      |Administrador / Secretaría|
+      :Corregir las calificaciones ingresadas;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje: No existen\nestudiantes asociados a la materia;
+    
+    |Administrador / Secretaría|
+    :Visualizar aviso sin registros;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de materias;
+  stop
+endif
+
+@enduml

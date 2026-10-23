@@ -1,0 +1,78 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-32 - Registrar Mesa de Examen
+
+|Administrador / Secretaría|
+start
+:Selecciona "Agregar fecha de final";
+
+|Interfaz|
+:Mostrar formulario de registro\nde mesa de examen;
+
+|Administrador / Secretaría|
+:Selecciona carrera, materia, tipo de mesa,\nllamado, ciclo lectivo y docentes;
+:Ingresa fecha y hora;
+
+|Interfaz|
+:Enviar datos de la mesa de examen;
+
+|Sistema|
+:Verificar existencia de la carrera,\nmateria, ciclo lectivo y docentes;
+
+if (§¿Entidades requeridas existen?) then (Si)
+  :Validar formato de fecha/hora\ny completitud de datos;
+  
+  if (§¿Datos completos y fecha válida?) then (Si)
+    :Verificar si existe mesa duplicada\no conflictos de agenda/docentes;
+    
+    if (§¿Mesa es única y sin conflictos?) then (Si)
+      :Registrar la mesa de examen\nen la base de datos;
+      :Asociar los docentes a la mesa;
+      
+      if (§¿Persistencia exitosa?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de confirmación\nde registro exitoso;
+        
+        |Administrador / Secretaría|
+        :Visualizar la nueva mesa\nde examen creada;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError de persistencia en BD;
+        
+        |Administrador / Secretaría|
+        :Reintentar o cancelar;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error: Mesa duplicada\no conflicto de agenda con los docentes;
+      
+      |Administrador / Secretaría|
+      :Corregir fecha, hora o docentes;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error: Datos incompletos\no fecha/hora inválida;
+    
+    |Administrador / Secretaría|
+    :Completar o corregir formulario;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria o docente inexistente;
+  
+  |Administrador / Secretaría|
+  :Revisar las selecciones realizadas;
+  stop
+endif
+
+@enduml

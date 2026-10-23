@@ -1,0 +1,47 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-13 - Activar/Desactivar Docente
+
+|Administrador / Secretaría|
+start
+:Selecciona al docente;
+:Solicita cambiar su estado\n(Activar / Desactivar);
+
+|Interfaz|
+:Enviar solicitud de cambio\nde estado del docente;
+
+|Sistema|
+:Buscar docente\nen la base de datos;
+
+if (§¿Docente existe?) then (Si)
+  :Actualizar el estado\ndel docente;
+  
+  if (§¿Actualización exitosa?) then (Si)
+    |Interfaz|
+    :Mostrar mensaje de confirmación\nde cambio de estado;
+    
+    |Administrador / Secretaría|
+    :Visualizar el nuevo estado\ndel docente;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nFalla al actualizar el estado;
+    
+    |Administrador / Secretaría|
+    :Reintentar o cancelar;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nDocente inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de docentes;
+  stop
+endif
+
+@enduml

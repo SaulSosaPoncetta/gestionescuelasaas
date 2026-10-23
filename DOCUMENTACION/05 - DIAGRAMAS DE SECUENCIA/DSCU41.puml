@@ -1,0 +1,84 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "CarreraUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "CarreraController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso a la Carrera ==
+
+Actor -> UI: Acceder a la opción "Carrera"
+activate UI
+
+UI -> Ctrl: consultarCarrera()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Identificación del Estudiante ==
+
+    Ctrl -> DB: identificarEstudiante()
+    activate DB
+    return estudiante
+
+    == Fase 3: Consulta de Carreras Asociadas ==
+
+    Ctrl -> DB: consultarCarrerasAsociadas(estudiante)
+    activate DB
+
+    alt Excepción 1: Estudiante sin carrera
+
+        DB --> Ctrl: no existen carreras asociadas
+        Ctrl --> UI: error: Estudiante sin carrera
+        UI --> Actor: Mostrar mensaje "El estudiante no posee una carrera asociada"
+
+    else Carrera asociada
+
+        return carreras
+
+        == Fase 4: Visualización de Información ==
+
+        Ctrl --> UI: mostrarInformacionCarrera(carreras)
+        deactivate Ctrl
+
+        UI --> Actor: Mostrar información de la carrera
+        deactivate UI
+
+    end
+end
+
+@enduml

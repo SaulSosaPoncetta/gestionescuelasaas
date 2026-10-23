@@ -1,0 +1,43 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaFinales" as Vista
+control "EstudianteFinalesController" as Ctrl
+entity "EstudianteFinalesService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-70: Estudiante Consulta Finales
+
+Alumno -> Vista : Acceder a la sección de finales
+activate Vista
+Vista -> Ctrl : index()
+activate Ctrl
+
+Ctrl -> Service : consultarMesasYFinales(idAlumnoAutenticado)
+activate Service
+Service -> BD : obtenerMesasDisponiblesAlumno(idAlumno)
+activate BD
+BD --> Service : ListaMesas / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1 / 2: No existen mesas de examen disponibles / sin materias habilitadas
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar mensaje ("No hay mesas de examen disponibles")
+    Vista --> Alumno : Informar ausencia de mesas o habilitaciones
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Fallo en la base de datos")
+    Ctrl --> Vista : Mostrar error del sistema
+    Vista --> Alumno : Informar error al obtener finales
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaMesasFinales
+    deactivate Service
+    Ctrl --> Vista : PresentarFinales(ListaMesasFinales)
+    deactivate Ctrl
+    Vista --> Alumno : Mostrar información de finales y mesas
+    deactivate Vista
+end
+
+@enduml

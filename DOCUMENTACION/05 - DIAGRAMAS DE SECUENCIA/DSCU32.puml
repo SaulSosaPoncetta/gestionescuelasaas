@@ -1,0 +1,142 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+
+box "Capa de Presentación" 
+    participant "MesaExamenUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "MesaExamenController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso y Registro de Mesa ==
+
+Actor -> UI: Seleccionar "Agregar fecha de final"
+activate UI
+
+UI -> Ctrl: registrarMesa()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Ingreso de Datos ==
+
+    Actor -> UI: Seleccionar carrera
+    Actor -> UI: Seleccionar materia
+    Actor -> UI: Seleccionar tipo de mesa
+    Actor -> UI: Seleccionar llamado
+    Actor -> UI: Seleccionar ciclo lectivo
+    Actor -> UI: Seleccionar docentes
+    Actor -> UI: Ingresar fecha y hora
+
+    UI -> Ctrl: validarInformacion(datos)
+    
+    alt Excepción 1: Datos incompletos
+
+        Ctrl --> UI: error: Datos incompletos
+        UI --> Actor: Mostrar mensaje "Complete todos los datos requeridos"
+
+    else Datos completos
+
+        alt Excepción 2: Materia inexistente
+
+            Ctrl --> UI: error: Materia inexistente
+            UI --> Actor: Mostrar mensaje "La materia seleccionada no existe"
+
+        else Materia existente
+
+            alt Excepción 3: Docente inexistente
+
+                Ctrl --> UI: error: Docente inexistente
+                UI --> Actor: Mostrar mensaje "El docente seleccionado no existe"
+
+            else Docente existente
+
+                alt Excepción 4: Fecha inválida
+
+                    Ctrl --> UI: error: Fecha inválida
+                    UI --> Actor: Mostrar mensaje "La fecha ingresada no es válida"
+
+                else Fecha válida
+
+                    == Fase 3: Registro de la Mesa ==
+
+                    Ctrl -> DB: registrarMesa(datos)
+                    activate DB
+
+                    alt Excepción 5: Mesa duplicada
+
+                        DB --> Ctrl: error: Mesa duplicada
+                        Ctrl --> UI: error: La mesa de examen ya se encuentra registrada
+                        UI --> Actor: Mostrar mensaje "La mesa de examen ya existe"
+
+                    else Mesa disponible
+
+                        alt Excepción 6: Conflicto de información
+
+                            DB --> Ctrl: error: Conflicto de información
+                            Ctrl --> UI: error: Existe un conflicto de información
+                            UI --> Actor: Mostrar mensaje "Los datos ingresados generan un conflicto"
+
+                        else Información correcta
+
+                            alt Excepción 7: Error de persistencia
+
+                                DB --> Ctrl: error: Error de persistencia
+                                Ctrl --> UI: error: No se pudo registrar la mesa
+                                UI --> Actor: Mostrar mensaje "Error interno de almacenamiento, intente nuevamente"
+
+                            else Registro exitoso
+
+                                return mesaRegistrada
+
+                                Ctrl -> DB: asociarDocentes(mesa)
+                                activate DB
+                                return docentesAsociados
+
+                                Ctrl --> UI: confirmarOperacion
+                                deactivate Ctrl
+
+                                UI --> Actor: El sistema confirma la operación: "Mesa de examen registrada correctamente"
+                                deactivate UI
+
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-16 - Modificar Estudiante
+
+|Administrador / Secretaría|
+start
+:Selecciona al estudiante\npara modificar;
+
+|Interfaz|
+:Solicitar información\ndel estudiante;
+
+|Sistema|
+:Buscar estudiante\nen la base de datos;
+
+if (§¿Estudiante existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con los\ndatos del estudiante;
+  
+  |Administrador / Secretaría|
+  :Modifica los datos\ny confirma la operación;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar datos ingresados;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Actualizar el registro del\nestudiante en la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar información\nactualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nEstudiante inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado;
+  stop
+endif
+
+@enduml

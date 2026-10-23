@@ -1,0 +1,52 @@
+.anio-container {
+    margin-bottom: 28px;
+}
+
+/* ── Encabezado "Espacio Curricular  |  1° AÑO" en la misma celda ─────── */
+.col-espacio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.anio-badge {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2563eb;
+    letter-spacing: 0.5px;
+}
+
+/* ── Fila bloqueada: materia sin final disponible ─────────────────────── */
+.fila-bloqueada td {
+    color: #aaa;
+    background: #fafafa;
+}
+
+/* ── Fechas: uno o más botones que se acomodan solos ──────────────────── */
+.fechas-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-fecha {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1.5px solid #2563eb;
+    background: #fff;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.18s, color 0.18s;
+}
+
+.btn-fecha:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.btn-fecha.seleccionada {
+    background: #2563eb;
+    color: #fff;
+}

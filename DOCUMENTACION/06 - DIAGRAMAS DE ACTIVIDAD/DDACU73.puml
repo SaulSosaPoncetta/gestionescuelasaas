@@ -1,0 +1,70 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-73 - Estudiante se Da de Baja de una Mesa de Examen
+
+|Estudiante|
+start
+:Selecciona una inscripción a final activa y solicita la baja;
+
+|Interfaz|
+:Enviar solicitud de cancelación de inscripción;
+
+|Sistema|
+:Verificar existencia de la inscripción;
+
+if (§¿Existe la inscripción?) then (Si)
+  :Verificar titularidad del estudiante autenticado;
+
+  if (§¿Inscripción pertenece al estudiante?) then (Si)
+    :Verificar plazo y fecha límite permitida para la baja;
+
+    if (§¿Plazo dentro del tiempo permitido?) then (Si)
+      :Eliminar/Inactivar inscripción en la base de datos;
+
+      if (§¿Baja procesada exitosamente?) then (Si)
+        |Interfaz|
+        :Mostrar mensaje de éxito:\nBaja realizada correctamente;
+
+        |Estudiante|
+        :Visualizar confirmación de baja;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError al procesar la baja en BD;
+
+        |Estudiante|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nEl plazo para darse de baja ha expirado;
+
+      |Estudiante|
+      :Visualizar aviso de plazo vencido;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nNo posee permisos para cancelar esta inscripción;
+
+    |Estudiante|
+    :Visualizar mensaje de rechazo;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nSin inscripción asociada / no encontrada;
+
+  |Estudiante|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

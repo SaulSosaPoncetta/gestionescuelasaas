@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-44: Consultar Estudiantes de Carrera" as CU44
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Existencia de Carrera y\nUsuario Autenticado (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Seleccionar Carrera y Recuperar Estudiantes" as Sec1
+    usecase "Configurar y Aplicar Filtros (Materia / Año)" as Sec2
+    usecase "Mostrar Estudiantes Correspondientes" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Listado de Estudiantes Disponible\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Carrera Inexistente" as Exc1
+    usecase "Exc 2: No Existen Estudiantes en la Carrera" as Exc2
+    usecase "Exc 3: No Existen Coincidencias con los Filtros" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU44
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU44 ..> Precond : <<include>>
+    CU44 ..> Sec1 : <<include>>
+    CU44 ..> Sec2 : <<include>>
+    CU44 ..> Sec3 : <<include>>
+    CU44 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec1 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

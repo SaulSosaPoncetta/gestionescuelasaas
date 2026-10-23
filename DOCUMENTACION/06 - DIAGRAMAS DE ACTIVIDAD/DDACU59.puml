@@ -1,0 +1,46 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-59 - Docente Consulta Finales
+
+|Docente|
+start
+:Selecciona la opción "Mesas de Finales";
+
+|Interfaz|
+:Solicitar mesas de examen asignadas;
+
+|Sistema|
+:Consultar mesas de examen asignadas al docente;
+
+if (§¿Consulta exitosa?) then (Si)
+  if (§¿Tiene mesas de examen asignadas?) then (Si)
+    :Recuperar detalles de las mesas (materia, fecha, aula, tribunal);
+
+    |Interfaz|
+    :Desplegar listado de mesas de examen final;
+
+    |Docente|
+    :Visualizar las mesas de finales asignadas;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje:\nNo hay mesas de examen asignadas disponibles;
+
+    |Docente|
+    :Visualizar mensaje;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error\nde lectura en la BD;
+
+  |Docente|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

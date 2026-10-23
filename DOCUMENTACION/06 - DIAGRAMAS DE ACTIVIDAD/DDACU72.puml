@@ -1,0 +1,78 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-72 - Estudiante se Inscribe a una Mesa de Examen
+
+|Estudiante|
+start
+:Selecciona una mesa de examen;
+
+|Interfaz|
+:Solicitar confirmación de inscripción;
+
+|Estudiante|
+:Confirmar la inscripción a la mesa;
+
+|Interfaz|
+:Enviar datos de inscripción;
+
+|Sistema|
+:Verificar existencia de la mesa seleccionada;
+
+if (§¿Mesa existe?) then (Si)
+  :Verificar inscripción previa en la mesa;
+
+  if (§¿Alumno ya inscripto?) then (No)
+    :Validar condiciones académicas y correlatividades;
+
+    if (§¿Cumple condiciones académicas?) then (Si)
+      :Persistir la inscripción en la base de datos;
+
+      if (§¿Inscripción registrada con éxito?) then (Si)
+        :Generar comprobante de inscripción;
+
+        |Interfaz|
+        :Mostrar mensaje de éxito y comprobante de inscripción;
+
+        |Estudiante|
+        :Visualizar comprobante de inscripción;
+        stop
+      else (No)
+        |Interfaz|
+        :Mostrar mensaje de error:\nError al registrar la inscripción en BD;
+
+        |Estudiante|
+        :Visualizar mensaje de error;
+        stop
+      endif
+
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nInhabilitación académica o correlatividades pendientes;
+
+      |Estudiante|
+      :Visualizar causa de inhabilitación;
+      stop
+    endif
+
+  else (Si)
+    |Interfaz|
+    :Mostrar mensaje de error:\nAlumno ya inscripto en esta mesa;
+
+    |Estudiante|
+    :Visualizar mensaje de aviso;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nNo existe la mesa seleccionada;
+
+  |Estudiante|
+  :Regresar al catálogo de mesas;
+  stop
+endif
+
+@enduml

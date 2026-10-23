@@ -1,0 +1,62 @@
+/* ── PESTAÑAS ─────────────────────────────────────────────────────────── */
+.finalesEst-grid {
+    max-width: 420px;
+    margin-bottom: 20px;
+}
+
+.sin-resultados {
+    text-align: center;
+    color: #888;
+    padding: 20px 0 !important;
+}
+
+.finales-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-tab {
+    padding: 10px 22px;
+    border-radius: 12px;
+    border: 2px solid #2563eb;
+    background: #fff;
+    color: #2563eb;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+
+.btn-tab:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.btn-tab.activo {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* ── IMPRESIÓN: solo la tabla visible ────────────────────────────────── */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #finales-print-area,
+    #finales-print-area * {
+        visibility: visible;
+    }
+
+    #finales-print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    /* Las tablas que están en display:none (pestañas no activas) ya
+       quedan afuera de la impresión solas, no hace falta reglas extra
+       para ocultarlas. */
+}

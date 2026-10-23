@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-55 - Docente Consulta Alumnos de una Materia
+
+|Docente|
+start
+:Selecciona ver alumnos de una materia/cursada;
+
+|Interfaz|
+:Solicitar listado de alumnos inscriptos;
+
+|Sistema|
+:Verificar existencia de la materia;
+
+if (§¿Materia existe?) then (Si)
+  :Buscar alumnos inscriptos en la materia;
+
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen alumnos inscriptos?) then (Si)
+      :Recuperar listado de alumnos (legajo, nombre, estado);
+
+      |Interfaz|
+      :Mostrar el listado de alumnos inscriptos;
+
+      |Docente|
+      :Visualizar el listado de alumnos;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje:\nNo hay alumnos inscriptos en esta materia;
+
+      |Docente|
+      :Visualizar la lista vacía;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde consulta en la BD;
+
+    |Docente|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nMateria inexistente;
+
+  |Docente|
+  :Regresar al Panel Principal;
+  stop
+endif
+
+@enduml

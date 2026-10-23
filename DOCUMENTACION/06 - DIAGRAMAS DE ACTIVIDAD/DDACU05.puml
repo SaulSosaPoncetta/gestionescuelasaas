@@ -1,0 +1,53 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-05 - Modificar Perfil
+
+|Usuario autenticado|
+start
+:Accede a su perfil;
+:Selecciona "Modificar datos";
+
+|Interfaz|
+:Mostrar formulario con\ndatos actuales;
+
+|Usuario autenticado|
+:Modifica los datos y\nconfirma la operación;
+
+|Interfaz|
+:Enviar datos modificados;
+
+|Sistema|
+:Validar campos obligatorios\ny formato de datos;
+
+if (§¿Campos completos\ny datos válidos?) then (Si)
+  :Intentar actualizar\ninformación en base de datos;
+  
+  if (§¿Actualización\nexitosa?) then (Si)
+    |Interfaz|
+    :Mostrar mensaje de\nconfirmación de éxito;
+    
+    |Usuario autenticado|
+    :Visualizar perfil\nactualizado;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde actualización de datos;
+    
+    |Usuario autenticado|
+    :Permanecer en el formulario\no reintentar;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: campos obligatorios\nincompletos o datos inválidos;
+  
+  |Usuario autenticado|
+  :Corregir los datos ingresados;
+  stop
+endif
+
+@enduml

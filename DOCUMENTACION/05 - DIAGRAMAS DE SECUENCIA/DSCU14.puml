@@ -1,0 +1,100 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "EstudianteConsultasUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "EstudianteController" as Ctrl
+    participant "SessionManager" as Session
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Acceso al Módulo y Carga Inicial ==
+
+Actor -> UI: Acceder al módulo de estudiantes
+activate UI
+
+UI -> Ctrl: iniciarModuloConsultas()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+Ctrl -> DB: obtenerTodosLosEstudiantes()
+activate DB
+
+alt Excepción 2: Error de consulta (Fallo de base de datos)
+    DB --> Ctrl: error: SQLException / ConnectionTimeout
+    Ctrl --> UI: error: No se pudo recuperar la información
+    UI --> Actor: Mostrar mensaje "Error de consulta, reintente más tarde"
+else Consulta física exitosa
+    return registrosEstudiantes
+    
+    alt Excepción 1: No se encuentran estudiantes (Base de datos vacía)
+        Ctrl --> UI: listaVacia
+        UI --> Actor: Mostrar listado vacío con mensaje "No hay estudiantes registrados en el sistema"
+    else Registros encontrados (Flujo Normal Inicial)
+        Ctrl --> UI: listaEstudiantes
+        deactivate Ctrl
+        UI --> Actor: Muestra el listado general de estudiantes
+        deactivate UI
+    end
+end
+
+== Fase 2: Filtrado por Criterios y Selección de Perfil ==
+
+Actor -> UI: Establecer filtros de búsqueda (Nombre, Legajo, etc.)
+activate UI
+
+UI -> Ctrl: buscarEstudiantes(filtros)
+activate Ctrl
+
+Ctrl -> DB: buscarEstudiantesConFiltro(filtros)
+activate DB
+return resultadosFiltrados
+
+alt Excepción 1: No se encuentran estudiantes (Sin resultados)
+    Ctrl --> UI: resultadosVacios
+    UI --> Actor: Mostrar mensaje "No se encontraron estudiantes con los filtros aplicados"
+else Coincidencias encontradas
+    Ctrl --> UI: listaFiltrada
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra los resultados de la búsqueda
+    deactivate UI
+    
+    == Consulta de Perfil Individual ==
+    Actor -> UI: Seleccionar un estudiante para ver perfil (Paso 6)
+    activate UI
+    
+    UI -> Ctrl: obtenerPerfilEstudiante(estudianteId)
+    activate Ctrl
+    
+    Ctrl -> DB: buscarEstudiantePorId(estudianteId)
+    activate DB
+    return detalleEstudiante
+    
+    Ctrl --> UI: renderizarPerfil(detalleEstudiante)
+    deactivate Ctrl
+    UI --> Actor: Mostrar pantalla con perfil completo del estudiante
+    deactivate UI
+end
+
+@enduml

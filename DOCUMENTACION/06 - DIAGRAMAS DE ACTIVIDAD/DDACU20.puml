@@ -1,0 +1,68 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-20 - Modificar Carrera
+
+|Administrador / Secretaría|
+start
+:Selecciona una carrera\npara modificar;
+
+|Interfaz|
+:Solicitar información\nde la carrera;
+
+|Sistema|
+:Buscar carrera\nen la base de datos;
+
+if (§¿Carrera existe?) then (Si)
+  |Interfaz|
+  :Mostrar formulario con los\ndatos de la carrera;
+  
+  |Administrador / Secretaría|
+  :Modifica la información\ny confirma la operación;
+  
+  |Interfaz|
+  :Enviar datos modificados;
+  
+  |Sistema|
+  :Validar datos ingresados;
+  
+  if (§¿Datos válidos?) then (Si)
+    :Actualizar el registro de la\ncarrera en la base de datos;
+    
+    if (§¿Actualización exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar información\nde la carrera actualizada;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nFalla al actualizar en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error:\nDatos ingresados inválidos;
+    
+    |Administrador / Secretaría|
+    :Corregir los datos;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nCarrera inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de carreras;
+  stop
+endif
+
+@enduml

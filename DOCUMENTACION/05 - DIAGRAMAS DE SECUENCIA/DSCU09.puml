@@ -1,0 +1,69 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "AdminGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "AdminController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Inicio del Caso de Uso ==
+
+Actor -> UI: Seleccionar un administrador del listado
+activate UI
+
+Actor -> UI: Solicitar modificar su estado (Activar / Desactivar)
+
+UI -> Ctrl: cambiarEstadoAdministrador(adminId)
+activate Ctrl
+
+== Verificación de Registro (Precondición) ==
+
+Ctrl -> DB: verificarExistenciaYEstado(adminId)
+activate DB
+
+alt Excepción 1: Administrador inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Administrador no existe
+    UI --> Actor: Mostrar mensaje "El administrador seleccionado no existe en el sistema"
+else Administrador encontrado con éxito
+    return registroActual
+    
+    == Procesamiento del Cambio de Estado ==
+    
+    Ctrl -> Ctrl: alternarEstado(registroActual.estado)
+    
+    Ctrl -> DB: actualizarEstadoFisico(adminId, nuevoEstado)
+    activate DB
+    
+    alt Excepción 2: Error de actualización
+        DB --> Ctrl: error: Fallo en persistencia / Conexión
+        Ctrl --> UI: error: No se pudo cambiar el estado
+        UI --> Actor: Mostrar mensaje "Error interno al modificar el estado, intente nuevamente"
+    else Transacción exitosa
+        return confirmacionOK
+        
+        Ctrl --> UI: cambioEstadoExitoso(nuevoEstado)
+        deactivate Ctrl
+        UI --> Actor: El sistema confirma la operación: "El administrador queda activo o inactivo"
+        deactivate UI
+    end
+end
+
+@enduml

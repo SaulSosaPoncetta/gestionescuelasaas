@@ -1,0 +1,37 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-02 - Cerrar Sesión
+
+|Usuario autenticado|
+start
+:Seleccionamos la opción\n"Cerrar sesión";
+
+|Interfaz|
+:Enviar solicitud\nde cierre de sesión;
+
+|Sistema|
+:Recibe solicitud;
+:Invalida la sesión;
+
+if (§¿Sesión\ninvalidada con éxito?) then (Si)
+  :Eliminar información\nde autenticación;
+  
+  |Interfaz|
+  :Redirigir a pantalla\nde inicio;
+  
+  |Usuario autenticado|
+  :Visualizar pantalla\nde inicio;
+  stop
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error\nal cerrar sesión;
+  
+  |Usuario autenticado|
+  :Permanecer en la\nsesión activa;
+  stop
+endif
+
+@enduml

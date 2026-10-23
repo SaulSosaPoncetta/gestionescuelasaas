@@ -1,0 +1,74 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Alumno" as Alumno
+boundary "PantallaFinales" as Vista
+control "EstudianteFinalesController" as Ctrl
+entity "EstudianteFinalesService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-73: Estudiante se Da de Baja de una Mesa de Examen
+
+Alumno -> Vista : Acceder a la sección de finales
+activate Vista
+Vista -> Ctrl : obtenerInscripcionesActivas()
+activate Ctrl
+Ctrl --> Vista : Mostrar inscripciones del alumno
+deactivate Ctrl
+
+Alumno -> Vista : Seleccionar inscripción(idInscripcion) y solicitar baja
+Vista -> Ctrl : baja(idInscripcion)
+activate Ctrl
+
+Ctrl -> Service : procesarBajaMesa(idAlumnoAutenticado, idInscripcion)
+activate Service
+
+Service -> BD : obtenerInscripcion(idInscripcion)
+activate BD
+BD --> Service : DatosInscripcion / null
+deactivate BD
+
+alt Excepción 1: El alumno no posee una inscripción para la mesa seleccionada
+    Service --> Ctrl : Error("Inscripción no encontrada")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Alumno : Informar falta de inscripción
+else Inscripción Encontrada
+    Service -> Service : verificarPerTENENCIA(idAlumnoAutenticado, DatosInscripcion)
+    
+    alt Excepción 2: La inscripción no corresponde al alumno autenticado
+        Service --> Ctrl : Error("Acceso no autorizado a la inscripción")
+        Ctrl --> Vista : Mostrar error de permisos
+        Vista --> Alumno : Informar incompatibilidad de usuario
+    else Inscripción Propia
+        Service -> Service : verificarPlazoBajaPermitido(DatosInscripcion)
+        
+        alt Excepción 3: La inscripción no puede ser cancelada
+            Service --> Ctrl : Error("Plazo de baja vencido")
+            Ctrl --> Vista : Mostrar mensaje de restricción
+            Vista --> Alumno : Informar imposibilidad de cancelar baja
+        else Baja Permitida
+            Service -> BD : eliminarOInactivarInscripcion(idInscripcion)
+            activate BD
+            
+            alt Excepción 4: Se produce un error durante la operación
+                BD --> Service : ErrorBD
+                Service --> Ctrl : Error("Fallo al procesar la baja")
+                Ctrl --> Vista : Mostrar mensaje de error
+                Vista --> Alumno : Informar fallo en la operación
+            else Baja Exitosa (Secuencia Normal)
+                BD --> Service : BajaConfirmada
+                deactivate BD
+                Service --> Ctrl : BajaExitosa
+                deactivate Service
+                Ctrl --> Vista : InformarBajaCancelada("Inscripción cancelada con éxito")
+                deactivate Ctrl
+                Vista --> Alumno : Informar cancelación de inscripción
+                deactivate Vista
+            end
+        end
+    end
+end
+
+@enduml

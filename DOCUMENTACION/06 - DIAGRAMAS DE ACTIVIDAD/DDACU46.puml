@@ -1,0 +1,57 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-46 - Consultar Comprobantes
+
+|Usuario|
+start
+:Accede a la sección de "Comprobantes";
+
+|Interfaz|
+:Solicitar listado de comprobantes;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Identificar al usuario en sesión;
+  :Recuperar comprobantes asociados\ndesde la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen comprobantes registrados?) then (Si)
+      |Interfaz|
+      :Mostrar listado de comprobantes disponibles;
+      
+      |Usuario|
+      :Visualizar y consultar los comprobantes;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen comprobantes\ndisponibles para consultar;
+      
+      |Usuario|
+      :Visualizar pantalla sin registros;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura / consulta en BD;
+    
+    |Usuario|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Usuario|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

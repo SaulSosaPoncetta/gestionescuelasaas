@@ -1,0 +1,71 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-22 - Consultar Espacios Curriculares
+
+|Administrador / Secretaría / Estudiante|
+start
+:Selecciona una carrera;
+:Solicita los espacios curriculares;
+
+|Interfaz|
+:Enviar solicitud de consulta\npara la carrera seleccionada;
+
+|Sistema|
+:Buscar carrera\nen la base de datos;
+
+if (§¿Carrera existe?) then (Si)
+  :Recuperar materias / espacios\ncurriculares de la carrera;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen materias?) then (Si)
+      |Interfaz|
+      :Mostrar listado de materias\ny opciones de filtro;
+      
+      |Administrador / Secretaría / Estudiante|
+      repeat
+        :Aplica filtros de búsqueda\n(por año, cuatrimestre, etc.);
+        
+        |Interfaz|
+        :Enviar criterios de filtro;
+        
+        |Sistema|
+        :Filtrar materias recuperadas;
+        
+        |Interfaz|
+        :Mostrar materias filtradas;
+        
+        |Administrador / Secretaría / Estudiante|
+      repeat while (§¿Desea aplicar\notro filtro?) is (Si)
+      ->No;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: La carrera\nno posee materias registradas;
+      
+      |Administrador / Secretaría / Estudiante|
+      :Visualizar pantalla sin registros;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Administrador / Secretaría / Estudiante|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nCarrera inexistente;
+  
+  |Administrador / Secretaría / Estudiante|
+  :Regresar al módulo de carreras;
+  stop
+endif
+
+@enduml

@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Estudiante" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-39: Inscribirse a Mesa de Examen" as CU39
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Autenticación, Carrera Activa,\nMesas y Correlativas (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Consultar Finales y Seleccionar Mesa" as Sec1
+    usecase "Solicitar Inscripción e Identificar Estudiante" as Sec2
+    usecase "Verificar Carrera, Cursada, Aprobación previa\ny Correlativas (EstudianteFinalesService)" as Sec3
+    usecase "Verificar Duplicados y Registrar Inscripción" as Sec4
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Estudiante Inscripto en Mesa de Examen\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 4: Mesa no Disponible" as Exc4
+    usecase "Exc 5: Estudiante sin Carrera Activa" as Exc5
+    usecase "Exc 1: Materia ya Aprobada" as Exc1
+    usecase "Exc 2: Correlativas no Cumplidas" as Exc2
+    usecase "Exc 6: Condición Académica no Cumplida" as Exc6
+    usecase "Exc 3: Inscripción Duplicada" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU39
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU39 ..> Precond : <<include>>
+    CU39 ..> Sec1 : <<include>>
+    CU39 ..> Sec2 : <<include>>
+    CU39 ..> Sec3 : <<include>>
+    CU39 ..> Sec4 : <<include>>
+    CU39 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc4 ..> Sec1 : <<extend>>
+    Exc5 ..> Sec3 : <<extend>>
+    Exc1 ..> Sec3 : <<extend>>
+    Exc2 ..> Sec3 : <<extend>>
+    Exc6 ..> Sec3 : <<extend>>
+    Exc3 ..> Sec4 : <<extend>>
+}
+@enduml

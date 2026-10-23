@@ -1,0 +1,112 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Estudiante" as Actor
+
+box "Capa de Presentación" 
+    participant "FinalesUI\n(Pantalla)" as UI
+end box
+
+box "Capa de Negocio" 
+    participant "FinalesController" as Ctrl
+    participant "SessionManager" as Session
+end box
+
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+
+== Fase 1: Acceso a Finales ==
+
+Actor -> UI: Acceder a "Finales"
+activate UI
+
+UI -> Ctrl: consultarFinales()
+activate Ctrl
+
+== Verificación de Precondición ==
+
+Ctrl -> Session: verificarSesionActiva()
+activate Session
+return sesionValidaOk
+
+alt Sesión no válida
+
+    Ctrl --> UI: error: Usuario no autenticado
+    UI --> Actor: Mostrar mensaje de acceso no autorizado
+
+else Sesión válida
+
+    == Fase 2: Identificación de Carrera ==
+
+    Ctrl -> DB: consultarCarreraActiva(estudiante)
+    activate DB
+    return carreraActiva
+
+    alt Excepción 1: Estudiante sin carrera activa
+
+        Ctrl --> UI: error: Estudiante sin carrera activa
+        UI --> Actor: Mostrar mensaje "El estudiante no posee una carrera activa"
+
+    else Carrera activa
+
+        == Fase 3: Consulta de Materias ==
+
+        Ctrl -> DB: consultarMaterias(estudiante)
+        activate DB
+        return materias
+
+        == Fase 4: Verificación de Situación Académica ==
+
+        Ctrl -> DB: verificarSituacionAcademica(estudiante, materias)
+        activate DB
+        return situacionAcademica
+
+        alt Excepción 3: Materias sin condición para rendir
+
+            Ctrl --> UI: error: Materias sin condición para rendir
+            UI --> Actor: Mostrar mensaje "No existen materias con condición para rendir"
+
+        else Materias con condición para rendir
+
+            == Fase 5: Determinación de Mesas Disponibles ==
+
+            Ctrl -> DB: determinarMesasDisponibles(carrera, materias)
+            activate DB
+
+            alt Excepción 2: No existen mesas disponibles
+
+                DB --> Ctrl: no existen mesas disponibles
+                Ctrl --> UI: error: No existen mesas disponibles
+                UI --> Actor: Mostrar mensaje "No existen mesas de examen disponibles"
+
+            else Existen mesas disponibles
+
+                return mesasDisponibles
+
+                == Fase 6: Visualización de Finales ==
+
+                Ctrl --> UI: mostrarFinales(mesasDisponibles)
+                deactivate Ctrl
+
+                UI --> Actor: Mostrar finales correspondientes
+                deactivate UI
+
+            end
+        end
+    end
+end
+
+@enduml

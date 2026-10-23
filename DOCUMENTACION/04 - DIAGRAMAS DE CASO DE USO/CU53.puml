@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Docente" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-53: Docente Consulta Cursadas" as CU53
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Docente Autenticado y\nMaterias/Cursadas Asociadas (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Sección de Cursadas e Identificar Docente" as Sec1
+    usecase "Consultar y Recuperar Materias y Cursadas" as Sec2
+    usecase "Mostrar Listado de Cursadas en Pantalla" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Listado de Cursadas Obtención Exitosa\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: No Existen Cursadas Asociadas" as Exc1
+    usecase "Exc 2: No Existen Materias Asignadas" as Exc2
+    usecase "Exc 3: Error Durante la Consulta" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU53
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU53 ..> Precond : <<include>>
+    CU53 ..> Sec1 : <<include>>
+    CU53 ..> Sec2 : <<include>>
+    CU53 ..> Sec3 : <<include>>
+    CU53 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec2 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

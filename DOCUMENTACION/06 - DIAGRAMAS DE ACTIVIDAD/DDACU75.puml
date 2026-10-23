@@ -1,0 +1,58 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-75 - Estudiante Consulta Perfil de una Materia
+
+|Estudiante|
+start
+:Selecciona una materia de su plan o trayectoria;
+
+|Interfaz|
+:Solicitar información detallada de la materia;
+
+|Sistema|
+:Buscar la materia en la base de datos;
+
+if (§¿Consulta exitosa en BD?) then (Si)
+  if (§¿Materia existe?) then (Si)
+    :Verificar disponibilidad en la oferta académica;
+
+    if (§¿Materia disponible / activa?) then (Si)
+      :Recuperar programa, contenidos, carga horaria y correlatividades;
+
+      |Interfaz|
+      :Mostrar el perfil detallado de la materia;
+
+      |Estudiante|
+      :Visualizar información de la materia;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar advertencia:\nLa materia no se encuentra activa en el ciclo actual;
+
+      |Estudiante|
+      :Visualizar perfil con aviso de inactividad;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nMateria inexistente;
+
+    |Estudiante|
+    :Regresar a su lista de materias;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nError durante la consulta en BD;
+
+  |Estudiante|
+  :Visualizar mensaje de error;
+  stop
+endif
+
+@enduml

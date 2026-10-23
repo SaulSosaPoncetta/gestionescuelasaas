@@ -1,0 +1,93 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-31 - Consultar Mesas de Examen
+
+|Actor|
+start
+:Accede al módulo de finales;
+
+|Interfaz|
+:Solicitar listado de mesas de examen;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Recuperar mesas de examen\ndesde la base de datos;
+  
+  if (§¿Consulta exitosa?) then (Si)
+    if (§¿Existen mesas de examen?) then (Si)
+      |Interfaz|
+      :Mostrar listado de mesas de examen\ny opciones de filtro;
+      
+      |Actor|
+      repeat
+        if (§¿Desea aplicar filtros?) then (Si)
+          :Ingresa criterios de búsqueda / filtro\n(ej. carrera, materia, fecha);
+          
+          |Interfaz|
+          :Enviar criterios de filtro;
+          
+          |Sistema|
+          :Procesar filtros y buscar coincidencias;
+          
+          if (§¿Existen resultados para los filtros?) then (Si)
+            |Interfaz|
+            :Mostrar mesas filtradas;
+          else (No)
+            |Interfaz|
+            :Mostrar mensaje: No existen resultados\npara los filtros aplicados;
+          endif
+        else (No (Ver listado completo))
+        endif
+
+        |Actor|
+        if (§¿Desea ver el detalle de una mesa?) then (Si)
+          :Selecciona una mesa de examen;
+          
+          |Interfaz|
+          :Solicitar detalle de la mesa seleccionada;
+          
+          |Sistema|
+          :Recuperar detalle de la mesa de examen;
+          
+          |Interfaz|
+          :Mostrar información detallada\nde la mesa seleccionada;
+        else (No)
+        endif
+
+        |Actor|
+      repeat while (§¿Desea realizar otra consulta o filtro?) is (Si)
+      ->No;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen\nmesas de examen registradas;
+      
+      |Actor|
+      :Visualizar pantalla sin registros;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error\nde lectura/base de datos;
+    
+    |Actor|
+    :Visualizar mensaje de error;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Actor|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

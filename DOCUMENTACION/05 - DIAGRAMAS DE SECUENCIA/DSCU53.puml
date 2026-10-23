@@ -1,0 +1,43 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+actor "Docente" as Docente
+boundary "PantallaCursadas" as Vista
+control "CursadaDocController" as Ctrl
+entity "CursadaService" as Service
+database "BaseDeDatos" as BD
+
+title Diagrama de Secuencia - CU-53: Docente Consulta Cursadas
+
+Docente -> Vista : Acceder a la sección de cursadas
+activate Vista
+Vista -> Ctrl : listarCursadasDocente()
+activate Ctrl
+
+Ctrl -> Service : obtenerCursadasPorDocente(idDocenteAutenticado)
+activate Service
+Service -> BD : buscarCursadasYMaterias(idDocente)
+activate BD
+BD --> Service : ListaCursadas / ListaVacía / Error
+deactivate BD
+
+alt Excepción 1 / 2: No existen cursadas o materias asignadas
+    Service --> Ctrl : ListaVacía()
+    Ctrl --> Vista : Mostrar vista sin registros ("Sin cursadas asignadas")
+    Vista --> Docente : Informar ausencia de cursadas/materias
+else Excepción 3: Error durante la consulta
+    Service --> Ctrl : Error("Fallo al obtener cursadas")
+    Ctrl --> Vista : Mostrar mensaje de error
+    Vista --> Docente : Informar error del sistema
+else Consulta Exitosa (Secuencia Normal)
+    Service --> Ctrl : ListaCursadas
+    deactivate Service
+    Ctrl --> Vista : MostrarListaCursadas(ListaCursadas)
+    deactivate Ctrl
+    Vista --> Docente : Mostrar materias y cursadas asociadas
+    deactivate Vista
+end
+
+@enduml

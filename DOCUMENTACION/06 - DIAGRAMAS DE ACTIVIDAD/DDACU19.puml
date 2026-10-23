@@ -1,0 +1,64 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-19 - Registrar Carrera
+
+|Administrador / Secretaría|
+start
+:Selecciona "Agregar carrera";
+
+|Interfaz|
+:Mostrar formulario de registro;
+
+|Administrador / Secretaría|
+:Ingresa los datos de la carrera;
+
+|Interfaz|
+:Enviar datos ingresados;
+
+|Sistema|
+:Validar datos obligatorios\ny formato de la información;
+
+if (§¿Campos completos\ny datos válidos?) then (Si)
+  :Verificar si la carrera ya existe;
+  
+  if (§¿Carrera es única?) then (Si)
+    :Registrar la carrera\nen la base de datos;
+    
+    if (§¿Persistencia exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar la nueva carrera\nen el sistema;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError de persistencia en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error: Carrera duplicada;
+    
+    |Administrador / Secretaría|
+    :Corregir la información ingresada;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Datos obligatorios\nincompletos o inválidos;
+  
+  |Administrador / Secretaría|
+  :Completar o corregir formulario;
+  stop
+endif
+
+@enduml

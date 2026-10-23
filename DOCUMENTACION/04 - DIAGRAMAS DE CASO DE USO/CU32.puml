@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-32: Registrar Mesa de Examen" as CU32
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Registro de Carrera, Materia,\nCiclo Lectivo y Docentes (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Solicitar Alta y Seleccionar Carrera, Materia y Tipo" as Sec1
+    usecase "Configurar Llamado, Ciclo, Docentes, Fecha y Hora" as Sec2
+    usecase "Validar Información, Registrar Mesa y Asociar Docentes" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Mesa de Examen Registrada\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 2 y 3: Materia / Docente Inexistente" as Exc_Inexistente
+    usecase "Exc 1 y 4: Datos Incompletos / Fecha Inválida" as Exc_Datos
+    usecase "Exc 5 y 6: Mesa Duplicada / Conflicto de Información" as Exc_Negocio
+    usecase "Exc 7: Error de Persistencia" as Exc7
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU32
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU32 ..> Precond : <<include>>
+    CU32 ..> Sec1 : <<include>>
+    CU32 ..> Sec2 : <<include>>
+    CU32 ..> Sec3 : <<include>>
+    CU32 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc_Inexistente ..> Sec1 : <<extend>>
+    Exc_Datos ..> Sec2 : <<extend>>
+    Exc_Negocio ..> Sec3 : <<extend>>
+    Exc7 ..> Sec3 : <<extend>>
+}
+@enduml

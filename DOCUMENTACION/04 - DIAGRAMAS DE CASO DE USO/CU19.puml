@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Administrador / Secretaría" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-19: Registrar Carrera" as CU19
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Actor Autenticado y Datos Disponibles\n(Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Solicitar Alta e Ingresar Datos" as Sec1
+    usecase "Validar Información y Registrar Carrera" as Sec2
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Carrera Registrada en el Sistema\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Datos Incompletos" as Exc1
+    usecase "Exc 2: Carrera Duplicada" as Exc2
+    usecase "Exc 3: Error de Persistencia" as Exc3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU19
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU19 ..> Precond : <<include>>
+    CU19 ..> Sec1 : <<include>>
+    CU19 ..> Sec2 : <<include>>
+    CU19 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2 ..> Sec2 : <<extend>>
+    Exc3 ..> Sec2 : <<extend>>
+}
+@enduml

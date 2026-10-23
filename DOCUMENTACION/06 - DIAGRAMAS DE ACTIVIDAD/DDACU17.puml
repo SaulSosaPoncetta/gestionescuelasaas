@@ -1,0 +1,47 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-17 - Activar/Desactivar Estudiante
+
+|Administrador / Secretaría|
+start
+:Selecciona al estudiante;
+:Solicita cambiar el estado\n(Activar / Desactivar);
+
+|Interfaz|
+:Enviar solicitud de cambio\nde estado del estudiante;
+
+|Sistema|
+:Buscar estudiante\nen la base de datos;
+
+if (§¿Estudiante existe?) then (Si)
+  :Modificar el estado\ndel estudiante;
+  
+  if (§¿Actualización exitosa?) then (Si)
+    |Interfaz|
+    :Mostrar mensaje de confirmación\nde cambio de estado;
+    
+    |Administrador / Secretaría|
+    :Visualizar el nuevo estado\ndel estudiante;
+    stop
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nFalla al actualizar el estado;
+    
+    |Administrador / Secretaría|
+    :Reintentar o cancelar;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar mensaje de error:\nEstudiante inexistente;
+  
+  |Administrador / Secretaría|
+  :Regresar al listado de estudiantes;
+  stop
+endif
+
+@enduml

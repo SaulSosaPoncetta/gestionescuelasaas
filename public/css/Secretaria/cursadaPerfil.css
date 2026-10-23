@@ -1,0 +1,53 @@
+.section-divider{
+    margin:40px 0 25px;
+    border:none;
+    border-top:1px solid #e5e7eb;
+}
+
+.section-title{
+    font-size:24px;
+    font-weight:600;
+    color:#374151;
+    margin-bottom:25px;
+}
+
+.year-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:28px;
+}
+
+.year-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.year-header h3{
+    margin:0;
+    color:#374151;
+}
+
+.year-count{
+    color:#6b7280;
+    font-size:14px;
+    font-weight:500;
+}
+
+.empty-state{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:40px;
+    color:#9ca3af;
+    font-size:15px;
+}
+
+.header-actions{
+    display:flex;
+    gap:12px;
+}

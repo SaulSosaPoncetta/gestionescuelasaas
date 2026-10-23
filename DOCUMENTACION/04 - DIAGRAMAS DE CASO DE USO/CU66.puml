@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Definición de Actores
+actor "Alumno" as Actor
+
+rectangle "Sistema de Gestión Institucional" {
+    
+    ' Caso de Uso Principal
+    usecase "CU-66: Estudiante Consulta Carrera" as CU66
+    
+    ' --- PRECONDICIONES ---
+    usecase "Verificar Alumno Autenticado y\nCarrera Asociada (Precondición)" as Precond
+    
+    ' --- SECUENCIA NORMAL ---
+    usecase "Acceder a Consulta e Identificar Alumno Autenticado" as Sec1
+    usecase "Obtener y Procesar Información de Carrera" as Sec2
+    usecase "Mostrar Datos de la Carrera en Pantalla" as Sec3
+    
+    ' --- POSTCONDICIÓN ---
+    usecase "Visualización de Información Correspondiente a la Carrera\n(Postcondición)" as Post
+    
+    ' --- EXCEPCIONES ---
+    usecase "Exc 1: Alumno no Posee Carrera Asociada" as Exc1
+    usecase "Exc 2: Carrera no Disponible / Exc 3: Error al Recuperar Información" as Exc2_3
+
+    ' Conexión del Actor al caso raíz
+    Actor --> CU66
+
+    ' Relaciones de Inclusión (Precondiciones, Secuencia Normal y Postcondición)
+    CU66 ..> Precond : <<include>>
+    CU66 ..> Sec1 : <<include>>
+    CU66 ..> Sec2 : <<include>>
+    CU66 ..> Sec3 : <<include>>
+    CU66 ..> Post : <<include>>
+
+    ' Relaciones de Extensión (Excepciones vinculadas al paso correspondiente)
+    Exc1 ..> Sec1 : <<extend>>
+    Exc2_3 ..> Sec2 : <<extend>>
+}
+@enduml

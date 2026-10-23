@@ -1,0 +1,82 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Administrador / Secretaría" as Actor
+box "Capa de Presentación" 
+    participant "DocenteGestionUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "DocenteController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección y Recuperación de Datos Actuales ==
+
+Actor -> UI: Seleccionar un docente del listado
+activate UI
+
+UI -> Ctrl: obtenerDatosParaModificacion(docenteId)
+activate Ctrl
+
+Ctrl -> DB: buscarDocentePorId(docenteId)
+activate DB
+
+alt Excepción 1: Docente inexistente
+    DB --> Ctrl: registroNoEncontrado
+    Ctrl --> UI: error: Docente no existe
+    UI --> Actor: Mostrar mensaje "El docente seleccionado ya no figura en el sistema"
+else Docente encontrado con éxito
+    return datosDocente
+    
+    Ctrl --> UI: mostrarFormularioEdicion(datosDocente)
+    deactivate Ctrl
+    UI --> Actor: El sistema muestra el formulario con la información cargada
+    deactivate UI
+
+    == Fase 2: Modificación, Validación y Actualización ==
+
+    Actor -> UI: Modificar la información y confirmar la operación
+    activate UI
+    
+    UI -> Ctrl: actualizarDocente(docenteId, nuevosDatos)
+    activate Ctrl
+    
+    Ctrl -> Ctrl: validarNuevosDatos(nuevosDatos)
+    
+    alt Excepción 2: Datos inválidos
+        Ctrl --> UI: error: Datos no válidos según reglas de negocio
+        UI --> Actor: Mostrar campos con error y solicitar su corrección
+    else Datos válidos
+        
+        Ctrl -> DB: modificarRegistroDocente(docenteId, nuevosDatos)
+        activate DB
+        
+        alt Excepción 3: Error de actualización
+            DB --> Ctrl: error: Fallo de persistencia / Conexión
+            Ctrl --> UI: error: No se pudo guardar la información
+            UI --> Actor: Mostrar mensaje "Error interno al actualizar el registro, intente de nuevo"
+        else Actualización exitosa (Flujo Normal)
+            return confirmacionOK
+            
+            Ctrl --> UI: modificacionExitosaConfirmada
+            deactivate Ctrl
+            UI --> Actor: El sistema confirma la operación: "Información docente actualizada"
+            deactivate UI
+        end
+    end
+end
+
+@enduml

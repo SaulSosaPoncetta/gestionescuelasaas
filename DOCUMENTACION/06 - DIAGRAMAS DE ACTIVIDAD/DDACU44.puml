@@ -1,0 +1,80 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-44 - Consultar Estudiantes de una Carrera
+
+|Administrador / Secretaría|
+start
+:Selecciona una carrera;
+
+|Interfaz|
+:Solicitar lista de estudiantes\npara la carrera seleccionada;
+
+|Sistema|
+:Verificar autenticación del usuario;
+
+if (§¿Usuario autenticado?) then (Si)
+  :Buscar carrera en la base de datos;
+  
+  if (§¿Carrera existe?) then (Si)
+    :Recuperar estudiantes asociados\na la carrera;
+    
+    if (§¿Existen estudiantes registrados?) then (Si)
+      |Interfaz|
+      :Mostrar listado de estudiantes\ny opciones de filtro (Materia / Año);
+      
+      |Administrador / Secretaría|
+      repeat
+        if (§¿Desea aplicar filtros?) then (Si)
+          :Selecciona materia y/o año lectivo;
+          
+          |Interfaz|
+          :Enviar criterios de filtro;
+          
+          |Sistema|
+          :Aplicar filtros a la lista de estudiantes;
+          
+          if (§¿Existen coincidencias?) then (Si)
+            |Interfaz|
+            :Mostrar listado filtrado de estudiantes;
+          else (No)
+            |Interfaz|
+            :Mostrar mensaje: No existen coincidencias\npara los filtros seleccionados;
+          endif
+        else (No (Ver listado completo))
+        endif
+
+        |Administrador / Secretaría|
+      repeat while (§¿Desea realizar otro filtro?) is (Si)
+      ->No;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje: No existen estudiantes\nasociados a esta carrera;
+      
+      |Administrador / Secretaría|
+      :Visualizar pantalla sin registros;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar mensaje de error:\nCarrera inexistente;
+    
+    |Administrador / Secretaría|
+    :Regresar al listado de carreras;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error y redirigir\na pantalla de Login;
+  
+  |Administrador / Secretaría|
+  :Acceder a inicio de sesión;
+  stop
+endif
+
+@enduml

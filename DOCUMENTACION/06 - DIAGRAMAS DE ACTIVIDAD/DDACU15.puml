@@ -1,0 +1,66 @@
+@startuml
+skinparam Style strictuml
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+
+title Diagrama de Actividad: CU-15 - Registrar Estudiante
+
+|Administrador / Secretaría|
+start
+:Selecciona "Agregar estudiante";
+
+|Interfaz|
+:Mostrar formulario de registro;
+
+|Administrador / Secretaría|
+:Ingresa datos personales, información\ndocumental y de contacto;
+
+|Interfaz|
+:Enviar datos al sistema;
+
+|Sistema|
+:Validar datos obligatorios\ny formato de la información;
+
+if (§¿Campos completos\ny datos válidos?) then (Si)
+  :Verificar existencia de DNI;
+  
+  if (§¿DNI es único?) then (Si)
+    :Crear usuario del estudiante;
+    :Asignar rol "Estudiante";
+    :Registrar información del estudiante\nen la base de datos;
+    
+    if (§¿Persistencia exitosa?) then (Si)
+      |Interfaz|
+      :Mostrar mensaje de\nconfirmación de éxito;
+      
+      |Administrador / Secretaría|
+      :Visualizar al estudiante\nregistrado en el sistema;
+      stop
+    else (No)
+      |Interfaz|
+      :Mostrar mensaje de error:\nError de persistencia en BD;
+      
+      |Administrador / Secretaría|
+      :Reintentar o cancelar;
+      stop
+    endif
+
+  else (No)
+    |Interfaz|
+    :Mostrar error: DNI duplicado;
+    
+    |Administrador / Secretaría|
+    :Corregir el DNI ingresado;
+    stop
+  endif
+
+else (No)
+  |Interfaz|
+  :Mostrar error: Datos obligatorios\nincompletos o información inválida;
+  
+  |Administrador / Secretaría|
+  :Completar o corregir formulario;
+  stop
+endif
+
+@enduml

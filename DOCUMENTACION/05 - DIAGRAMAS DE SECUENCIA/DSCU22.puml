@@ -1,0 +1,90 @@
+@startuml
+skinparam monochrome true
+skinparam shadowlighting false
+
+<style>
+  box {
+    BackgroundColor transparent
+  }
+</style>
+
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 12
+
+actor "Actor\n(Admin/Sec/Est)" as Actor
+box "Capa de Presentación" 
+    participant "EspaciosCurricularesUI\n(Pantalla)" as UI
+end box
+box "Capa de Negocio" 
+    participant "MateriaController" as Ctrl
+end box
+box "Capa de Datos" 
+    participant "Base de Datos" as DB
+end box
+
+== Fase 1: Selección de Carrera y Carga Inicial ==
+
+Actor -> UI: Seleccionar una carrera del listado
+activate UI
+
+Actor -> UI: Solicitar visualización de espacios curriculares
+
+UI -> Ctrl: obtenerEspaciosPorCarrera(carreraId)
+activate Ctrl
+
+== Verificación de Carrera (Precondición) ==
+Ctrl -> DB: verificarCarreraExistente(carreraId)
+activate DB
+return carreraExiste
+
+alt Excepción 2: Carrera inexistente
+    Ctrl --> UI: error: La carrera seleccionada no es válida
+    UI --> Actor: Mostrar mensaje "Error: La carrera seleccionada no existe en el sistema"
+else Carrera existe
+    
+    Ctrl -> DB: buscarMateriasPorCarrera(carreraId)
+    activate DB
+    
+    alt Excepción 3: Error de consulta (Fallo físico de conexión)
+        DB --> Ctrl: error: SQLException / Timeout
+        Ctrl --> UI: error: Fallo al consultar la base de datos
+        UI --> Actor: Mostrar mensaje "Error de comunicación con el servidor, intente más tarde"
+    else Consulta exitosa
+        return listaMateriasBase
+        
+        alt Excepción 1: Carrera sin materias (Listado vacío)
+            Ctrl --> UI: listaVacia
+            UI --> Actor: Mostrar panel vacío con mensaje "La carrera seleccionada no posee materias registradas"
+        else Registros encontrados (Flujo Normal Inicial)
+            Ctrl --> UI: mostrarListadoMaterias(listaMateriasBase)
+            deactivate Ctrl
+            UI --> Actor: El sistema muestra todas las materias de la carrera
+            deactivate UI
+            
+            == Fase 2: Filtrado Interactivo de Resultados ==
+            
+            Actor -> UI: Ingresar criterios y aplicar filtros (Año, Semestre, etc.)
+            activate UI
+            
+            UI -> Ctrl: filtrarEspaciosCurriculares(carreraId, criterios)
+            activate Ctrl
+            
+            Ctrl -> DB: buscarMateriasConFiltro(carreraId, criterios)
+            activate DB
+            return resultadosFiltrados
+            
+            alt Excepción 1: Carrera sin materias (Filtros sin coincidencias)
+                Ctrl --> UI: resultadosVacios
+                UI --> Actor: Mostrar mensaje "No se encontraron materias que coincidan con los filtros aplicados"
+            else Coincidencias encontradas
+                Ctrl --> UI: mostrarResultadosFiltrados(resultadosFiltrados)
+                deactivate Ctrl
+                UI --> Actor: El sistema actualiza la pantalla con las materias filtradas
+                deactivate UI
+            end
+        end
+    end
+end
+
+@enduml
